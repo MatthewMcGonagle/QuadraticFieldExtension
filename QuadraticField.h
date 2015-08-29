@@ -1,3 +1,5 @@
+//Author: Matthew McGonagle
+
 class Rational {
 public:
 	Rational(){num = 1; den = 1;};

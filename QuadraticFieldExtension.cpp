@@ -1,3 +1,5 @@
+//Author: Matthew McGonagle
+
 #include <iostream>
 #include "QuadraticField.h"
 

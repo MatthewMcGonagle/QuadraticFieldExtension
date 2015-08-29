@@ -1,3 +1,4 @@
+// Author: Matthew McGonagle
 #include "QuadraticField.h"
 
 Rational::Rational(int p, int q) {
