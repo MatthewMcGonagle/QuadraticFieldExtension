@@ -10,7 +10,7 @@ Rational::Rational(int p, int q) {
 		q = -q;
 	}
 
-	unsigned g = gcd(p, q);
+	unsigned int g = gcd(p, q);
 	if (g>1) {
 		p /= g;
 		q /=g;
@@ -56,42 +56,30 @@ std::string Rational::print() {
 	return name;
 }
 
-QuadraticField::QuadraticField() {
-	degree = 1;
-	SqrtResult = Rational(1,1);
-	root = NULL;
-	basefield= NULL;
+Rational Rational::Product(Rational r) {
+	return Rational(num*r.GetP(), den*r.GetQ());
 }
 
-QuadraticField::QuadraticField(QuadraticField* basefield_, int degbase, Rational* root_){
-	degree = 2*degbase;
-	root = new Rational[degree];
-	for (int i=0; i<degbase; i++)
-		root[i] = root_[i];
-	basefield = basefield_;
+Rational Rational::Sum(Rational r) {
+	int lcm = den*r.GetQ()/gcd(den, r.GetQ());
+	int pnew = num*lcm/den + r.GetP()*lcm/r.GetQ();
+	return Rational(pnew, lcm);
 }
 
-QuadraticField::~QuadraticField() {
-	delete root;
+bool Rational::FindSqrt() {
 
-}
-
-bool QuadraticField::FindSqrt(Rational r) {
-	int p = r.GetP(), q = r.GetQ();
-	int sqrtp, sqrtq;
-	if (p>0 && q>0){
+	if (num>0 && den>0){
 		sqrtp = sqrtq = 0;
 		do
 			sqrtp++;
-		while(sqrtp*sqrtp < p);
+		while(sqrtp*sqrtp < num);
+
 		do
 			sqrtq++;
-		while(sqrtq*sqrtq < q);
-		if(sqrtp*sqrtp == p && sqrtq*sqrtq ==q)
-		{
-			SqrtResult = Rational(sqrtp, sqrtq);
+		while(sqrtq*sqrtq < den);
+
+		if(sqrtp*sqrtp == num && sqrtq*sqrtq ==den)
 			return true;
-		}
 		else
 			return false;
 	}
@@ -99,9 +87,73 @@ bool QuadraticField::FindSqrt(Rational r) {
 		return false;
 }
 
-bool QuadraticField::FindSqrt(Rational* r, int n) {
-	if(n != degree)
-		return false;
+QuadraticField::QuadraticField() {
+	degree = 1;
+	SqrtResult = Rational(1,1);
+	root = NULL;
+	current = NULL;
+	basefield= NULL;
+
+	name = std::string();
+}
+
+QuadraticField::QuadraticField(Rational root_) {
+	degree = 2;
+	root  = new Rational[1];
+	current = new Rational[2];
+	basefield = NULL;
+
+	root[0] = root_;
+	name = std::string();
+}
+
+QuadraticField::QuadraticField(QuadraticField* basefield_, int degbase, Rational* root_){
+	degree = 2*degbase;
+	root = new Rational[degree];
+	current = new Rational[degree];
+	for (int i=0; i<degbase; i++)
+		root[i] = root_[i];
+	basefield = basefield_;
+}
+
+
+QuadraticField::~QuadraticField() {
+	if(root != nullptr)
+		delete[] root;
+	if(current != nullptr)
+		delete[] current;
 
 }
 
+bool QuadraticField::FindSqrt(Rational* r, int n) {
+	if(n > degree)
+		return false;
+	
+
+}
+
+void QuadraticField::Product(Rational *a, Rational *b) {
+	if(degree == 2) {
+		current[0] = a[1].Product(b[1]);
+		current[0] = root[0].Product(current[0]);
+		current[0] = current[0].Sum(a[0].Product(b[0]));
+
+		current[1] = a[0].Product(b[1]);
+		current[1] = current[1].Sum(a[1].Product(b[0]));
+	}
+		
+}
+
+std::string QuadraticField::Print(Rational *element){
+	if (degree == 2) {
+		name = element[0].print();
+		name += std::string(" + ");
+		name += element[1].print();
+		name += std::string(" (");
+		name += root[0].print();
+		name += std::string(")^1/2");
+		return name;
+	}
+	else
+		return std::string("Missed it?");
+}
