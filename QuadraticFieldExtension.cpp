@@ -9,6 +9,7 @@ void main() {
 
 	QuadraticField Q;
 	Rational r, sum, product;
+	std::vector<Rational> elements(2,Rational(1,1));
 
 	int p = 5, q=2;
 	cout << "Please input integer p = " << endl;
@@ -38,6 +39,19 @@ void main() {
 		cout << "Constructed Quadratic Extension" << endl;
 		Rational coordinates[2] = {Rational(1,2), Rational(2,3)};
 		cout << "Has elements such as " << QF.Print(coordinates) << endl;
+
+		elements[0] = Rational(3,1);
+		elements[1] = Rational(2,1);
+		if(QF.FindSqrt(elements)) {
+			cout << QF.Print(elements)
+				 << " has a square root." << endl;
+			elements = QF.GetSqrt();
+			cout << "The square root is " << elements[0].print() << " + " << elements[1].print() << " ( )^1/2" << endl;
+		}
+		else {
+			cout << elements[0].print() << " + " << elements[1].print() << " ( )^1/2 "
+				<< "does not have a square root" << endl;
+		}
 	}
 	cout << "A pause. Enter anything.";
 	cin >> p;
