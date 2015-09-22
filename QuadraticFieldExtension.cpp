@@ -40,17 +40,19 @@ void main() {
 		Rational coordinates[2] = {Rational(1,2), Rational(2,3)};
 		cout << "Has elements such as " << QF.Print(coordinates) << endl;
 
-		elements[0] = Rational(3,1);
-		elements[1] = Rational(2,1);
-		if(QF.FindSqrt(elements)) {
-			cout << QF.Print(elements)
-				 << " has a square root." << endl;
-			elements = QF.GetSqrt();
-			cout << "The square root is " << elements[0].print() << " + " << elements[1].print() << " ( )^1/2" << endl;
-		}
-		else {
-			cout << elements[0].print() << " + " << elements[1].print() << " ( )^1/2 "
-				<< "does not have a square root" << endl;
+		for(int i=-10; i<10; i++){
+			for(int j=-10; j<10; j++) {
+				elements[0] = Rational(i,1);
+				elements[1] = Rational(j,1);
+				if(QF.FindSqrt(elements)) {
+					cout << "Sqrt " << QF.Print(elements) << " = ";
+					elements = QF.GetSqrt();
+					cout << QF.Print(elements) << endl;
+				}
+				//else 
+					//cout << QF.Print(elements) << " does not have a square root" << endl;
+				
+			}
 		}
 	}
 	cout << "A pause. Enter anything.";

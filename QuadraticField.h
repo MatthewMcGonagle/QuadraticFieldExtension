@@ -8,10 +8,13 @@ public:
 	Rational(){num = 1; den = 1; name = std::string();};
 	Rational(int p, int q);
 
-	int GetP() {return num;};
-	int GetQ() {return den;};
+	int GetP() const {return num;};
+	int GetQ() const {return den;};
 	std::string print();
 	Rational Product(Rational r);
+	const Rational operator*(const Rational &other) const;
+	const Rational operator+(const Rational &other) const;
+	const Rational operator-(const Rational &other) const;
 	Rational Sum(Rational r);
 	Rational Minus(Rational r);
 	Rational Inverse();
@@ -24,8 +27,8 @@ public:
 
 private:
 
-	unsigned int gcd(int p, int q);
-	unsigned int abs(int p);
+	unsigned int gcd(int p, int q) const;
+	unsigned int abs(int p) const;
 
 	int num, den;
 	int sqrtp, sqrtq;

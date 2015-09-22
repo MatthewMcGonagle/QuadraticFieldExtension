@@ -21,7 +21,7 @@ Rational::Rational(int p, int q) {
 	name = std::string();
 }
 
-unsigned int Rational::gcd(int p, int q) {
+unsigned int Rational::gcd(int p, int q) const {
 	unsigned int a = abs(p), b = abs(q), r;
 	if(b == 0)
 		return 1;
@@ -33,7 +33,7 @@ unsigned int Rational::gcd(int p, int q) {
 	return a;
 }
 
-unsigned int Rational::abs(int p) {
+unsigned int Rational::abs(int p) const {
 	if (p < 0)
 		return (unsigned)(-p);
 	else
@@ -57,18 +57,63 @@ std::string Rational::print() {
 }
 
 Rational Rational::Product(Rational r) {
-	return Rational(num*r.GetP(), den*r.GetQ());
+	// First remove common divisors of opposing numerators and denominators! Reduce the chance of overflow error.
+	// Multiplication is (a/b) * (p/q)
+	int a=num, b=den, p=r.GetP(), q=r.GetQ(), g;
+	g = gcd(a,q);
+	a/=g;
+	q/=g;
+
+	g = gcd(b, p);
+	b/=g;
+	p/=g;
+	return Rational(a*p, b*q);
+}
+
+const Rational Rational::operator*(const Rational &r) const {
+	// First remove common divisors of opposing numerators and denominators! Reduce the chance of overflow error.
+	// Multiplication is (a/b) * (p/q)
+	
+	int a=this->num, b=this->den, p=r.GetP(), q=r.GetQ(), g;
+	g = gcd(a,q);
+	a/=g;
+	q/=g;
+
+	g = gcd(b, p);
+	b/=g;
+	p/=g;
+	return Rational(a*p, b*q);
+}
+
+const Rational Rational::operator+(const Rational &r) const {
+	// Do division first to reduce chance of integer overflow errors.
+	int lcm, pnew;
+	lcm = r.GetQ()/gcd(this->den, r.GetQ());
+	lcm *= this->den;
+	pnew = this->num*(lcm/this->den);
+	pnew += r.GetP()*(lcm/r.GetQ());
+	return Rational(pnew, lcm);
+}
+
+const Rational Rational::operator-(const Rational &r) const {
+	// Do division first to reduce chance of integer overflow errors.
+	int lcm, pnew;
+	lcm = r.GetQ()/gcd(this->den, r.GetQ());
+	lcm *= this->den;
+	pnew = this->num*(lcm/this->den);
+	pnew -= r.GetP()*(lcm/r.GetQ());
+	return Rational(pnew, lcm);
 }
 
 Rational Rational::Sum(Rational r) {
 	int lcm = den*r.GetQ()/gcd(den, r.GetQ());
-	int pnew = num*lcm/den + r.GetP()*lcm/r.GetQ();
+	int pnew = num*(lcm/den) + r.GetP()*(lcm/r.GetQ());
 	return Rational(pnew, lcm);
 }
 
 Rational Rational::Minus(Rational r) {
 	int lcm = den*r.GetQ()/gcd(den, r.GetQ());
-	int pnew = num*lcm/den - r.GetP()*lcm/r.GetQ();
+	int pnew = num*(lcm/den) - r.GetP()*(lcm/r.GetQ());
 	return Rational(pnew, lcm);
 }
 
@@ -146,19 +191,26 @@ bool QuadraticField::FindSqrt(std::vector<Rational> root_) {
 	if(root_.size() != degree)
 		return false;
 	else if(degree==2) {
-		// We look for a square root of the form a+R^(1/2) b where a,b rational
+		// We look for a square root of the form a+b*R^(1/2) where a,b rational.
+		// For the notes, we are finding the square root of X+Y*R^(1/2)
+		// so that X = root_[0] and Y = root_[1].
 		Rational newroot(1,1), newrootB(1,1); // Extra variables that will be necessary later
-		if(root_[0].IsZero()) {
-			newroot = root_[0].Product(Root[0].Inverse());
-			//Check is a==0 works.
+		if(root_[1].IsZero()) {
+			// The case of finding square root of X
+			// Solve a^2 + R b^2 = X and 2ab = 0
+
+			// The case that a=0
+			// Look at b = (X/R)^(1/2)
+			newroot = root_[0]*Root[0].Inverse();
 			if(newroot.FindSqrt()) { 
 				Result[0] = Rational(0,1);
 				Result[1] = newroot.GetSqrt();
 				return true;
 			}
 			
-			// Check b==0 works
-			newroot = root_[1];
+			// The case that b=0
+			// Look at a = X^(1/2)
+			newroot = root_[0];
 			if(newroot.FindSqrt()) {
 				Result[0] = newroot.GetSqrt();
 				Result[1] = Rational(0,1);
@@ -169,30 +221,44 @@ bool QuadraticField::FindSqrt(std::vector<Rational> root_) {
 			return false;
 		}
 		else { 
-			// We are the in the non-zero case and is the hardest case
-			newroot = root_[0].Product(root_[0]).Minus( Root[0].Product(root_[1].Product(root_[1])));
+			// Looking at the hardest case of Y non-zero
+			// Solve a^2 + R b^2 = X and 2ab = Y
+			// Now know that a and b both are non-zero,
+			// So it is safe to substitute b = Y/2a into the 
+			// first equation.
+			// So we must solve a^2 + (R/4) Y^2/a^2 = X
+			// equivalent to a^4 - X a^2 + (R/4) Y^2 = 0.
+
+			// Need to find a in Q satisfying quartic polynomial.
+			// Quadratic Formula tells us a^2 is in Q iff
+			// (X^2 - R Y^2)^(1/2) is in Q. First check this.
+
+			newroot = root_[0]*root_[0] - Root[0]*root_[1]*root_[1];
 			if(newroot.FindSqrt()) {
+
+				// Know that a^2 is in the Q. Need to check square root
+				// of either positive or negative root to see if any a
+				// is in the field
+
 				newroot = newroot.GetSqrt();
 
 				// Check the plus root
-				newrootB = root_[0].Sum(newroot);
-				newrootB = newrootB.Product(Root[0].Product(Rational(2,1)).Inverse());
+				newrootB = (root_[0]+newroot)*Rational(1,2);
 				if(newrootB.FindSqrt()) {
-					Result[0] = root_[1].Product(Rational(2,1).Product(newrootB.GetSqrt()).Inverse());
-					Result[1] = newrootB.GetSqrt();
+					Result[0] = newrootB.GetSqrt();
+					Result[1] = root_[1]*Rational(1,2)*Result[0].Inverse();
 					return true;
 				}
 
 				//Check the minus root
-				newrootB = root_[0].Minus(newroot);
-				newrootB = newrootB.Product(Root[0].Product(Rational(2,1)).Inverse());
+				newrootB = (root_[0]-newroot)*Rational(1,2);
 				if(newrootB.FindSqrt()) {
-					Result[0] = root_[1].Product(Rational(2,1).Product(newrootB.GetSqrt()).Inverse());
-					Result[1] = newrootB.GetSqrt();
+					Result[0] = newrootB.GetSqrt();
+					Result[1] = root_[1]*Rational(1,2)*Result[0].Inverse();
 					return true;
 				}
 
-				// Neither plus/minus root has a root. So there is no rational root
+				// Neither plus/minus root has a root in Q. So there is no rational root
 				return false;
 
 			}
