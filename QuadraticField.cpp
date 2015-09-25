@@ -289,6 +289,29 @@ std::string QuadraticField::Print(CoordinateChunk x){
 	}
 }
 
+std::string QuadraticField::PrintName() {
+	std::string name = std::string("Q(");
+	name += PrintRootList();
+	name += std::string(")");
+	return name;
+}
+
+std::string QuadraticField::PrintRootList() {
+	std::string name = std::string("");
+	if(degree==2) {
+		name += std::string("(");
+		name += Root[0].print();
+		name += std::string(")^0.5");
+	}
+	else {
+		name += std::string("(");
+		name += basefield->Print(Root);
+		name += std::string(")^0.5, ");
+		name += basefield->PrintRootList();
+	}
+	return name;
+}
+
 void QuadraticField::ZeroResult() {
 	for(int i =0; i<degree; i++)
 		Result[i] = Rational(0,1);

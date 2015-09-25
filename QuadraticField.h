@@ -59,6 +59,8 @@ public:
 	bool FindSqrt(std::vector<Rational> root_);
 	std::string Print(std::vector<Rational> coordinates);
 	std::string Print(CoordinateChunk x);
+	std::string PrintName();
+	std::string PrintRootList();
 
 	int GetDegree() {return degree;}
 	std::vector<Rational> GetSqrt() {return Result;}

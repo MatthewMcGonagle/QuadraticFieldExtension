@@ -37,19 +37,19 @@ void main() {
 
 		cout << "There is no rational square root of " << r.print() << endl;
 		QuadraticField QF(r);
-		cout << "Constructed Quadratic Extension" << endl;
+		cout << "Constructed Quadratic Extension " << QF.PrintName() << endl;
 		Rational coordinates[4] = {Rational(1,2), Rational(2,3), Rational(3,4), Rational(4,5)};
 		cout << "Has elements such as " << QF.Print(elements) << endl;
 
 		elements[0] = Rational(1,1);
 		elements[1] = Rational(1,1);
 		QuadraticField QFB(&QF, elements);
-		cout << "Constructed Quadratic Extension" << endl
+		cout << "Constructed Quadratic Extension " << QFB.PrintName() << endl
 				<< "Has elements such as " << QFB.Print(elementsB) << endl;
 		QFB.Product(elementsB, elementsB);
 		cout << " The square is " << QFB.Print(QFB.Result) << endl;
-		for(int i=0; i<10; i++){
-			for(int j=0; j<10; j++) {
+		for(int i=0; i<100; i++){
+			for(int j=0; j<100; j++) {
 				elements[0] = Rational(i,1);
 				elements[1] = Rational(j,1);
 				if(QF.FindSqrt(elements)) {
@@ -57,7 +57,7 @@ void main() {
 					elements = QF.GetSqrt();
 					cout << QF.Print(elements) << endl;
 					QF.Product(elements, elements);
-					cout<< "The square is " << QF.Print(QF.Result) << endl;
+					//cout<< "The square is " << QF.Print(QF.Result) << endl;
 				}
 				//else 
 					//cout << QF.Print(elements) << " does not have a square root" << endl;
