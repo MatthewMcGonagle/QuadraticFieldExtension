@@ -11,12 +11,10 @@ public:
 	int GetP() const {return num;};
 	int GetQ() const {return den;};
 	std::string print();
-	Rational Product(Rational r);
 	const Rational operator*(const Rational &other) const;
 	const Rational operator+(const Rational &other) const;
 	const Rational operator-(const Rational &other) const;
-	Rational Sum(Rational r);
-	Rational Minus(Rational r);
+
 	Rational Inverse();
 
 	bool IsZero();
@@ -35,6 +33,22 @@ private:
 	std::string name;
 };
 
+
+//////////////////////////////////
+
+class CoordinateChunk {
+public:
+	CoordinateChunk();
+	CoordinateChunk(std::vector<Rational>* coords_, int offset_, int size_);
+	Rational& Get(int i) {return (*coords)[offset+i];}
+
+	std::vector<Rational>* coords;
+	int offset, size;
+};
+
+////////////////////////////////////////
+
+
 class QuadraticField {
 
 public:
@@ -43,15 +57,25 @@ public:
 	QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_);
 	~QuadraticField();
 	bool FindSqrt(std::vector<Rational> root_);
-	void Product(std::vector<Rational> a, std::vector<Rational> b);
-	std::string Print(Rational* element);
 	std::string Print(std::vector<Rational> coordinates);
+	std::string Print(CoordinateChunk x);
 
 	int GetDegree() {return degree;}
 	std::vector<Rational> GetSqrt() {return Result;}
+
+	void ZeroResult();
+	void SetResult(std::vector<Rational>& Result_);
+	QuadraticField operator+(std::vector<Rational> &other);
+	void Sum(std::vector<Rational> &a, std::vector<Rational> &b);
+	void Product(std::vector<Rational> &a, std::vector<Rational> &b);
+	void Product(CoordinateChunk a, CoordinateChunk b, CoordinateChunk Result_);
+	//QuadraticField operator*(Coordinates& other);
+
+	std::vector<Rational> Result, Scratch;
+
 private:
 	int degree;
-	std::vector<Rational> Result, Root;
+	std::vector<Rational> Root;
 	QuadraticField* basefield;
 	std::string name;
 };

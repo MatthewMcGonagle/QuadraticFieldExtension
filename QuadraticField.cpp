@@ -56,20 +56,6 @@ std::string Rational::print() {
 	return name;
 }
 
-Rational Rational::Product(Rational r) {
-	// First remove common divisors of opposing numerators and denominators! Reduce the chance of overflow error.
-	// Multiplication is (a/b) * (p/q)
-	int a=num, b=den, p=r.GetP(), q=r.GetQ(), g;
-	g = gcd(a,q);
-	a/=g;
-	q/=g;
-
-	g = gcd(b, p);
-	b/=g;
-	p/=g;
-	return Rational(a*p, b*q);
-}
-
 const Rational Rational::operator*(const Rational &r) const {
 	// First remove common divisors of opposing numerators and denominators! Reduce the chance of overflow error.
 	// Multiplication is (a/b) * (p/q)
@@ -102,18 +88,6 @@ const Rational Rational::operator-(const Rational &r) const {
 	lcm *= this->den;
 	pnew = this->num*(lcm/this->den);
 	pnew -= r.GetP()*(lcm/r.GetQ());
-	return Rational(pnew, lcm);
-}
-
-Rational Rational::Sum(Rational r) {
-	int lcm = den*r.GetQ()/gcd(den, r.GetQ());
-	int pnew = num*(lcm/den) + r.GetP()*(lcm/r.GetQ());
-	return Rational(pnew, lcm);
-}
-
-Rational Rational::Minus(Rational r) {
-	int lcm = den*r.GetQ()/gcd(den, r.GetQ());
-	int pnew = num*(lcm/den) - r.GetP()*(lcm/r.GetQ());
 	return Rational(pnew, lcm);
 }
 
@@ -152,7 +126,8 @@ bool Rational::FindSqrt() {
 		return false;
 }
 
-///////////////////////////////////////////////
+
+//////////////////////////////////////////////
 
 QuadraticField::QuadraticField() {
 	degree = 1;
@@ -160,7 +135,7 @@ QuadraticField::QuadraticField() {
 	basefield= NULL;
 
 	name = std::string();
-	Result = std::vector<Rational>(1);
+	Result = Scratch = std::vector<Rational>(1);
 }
 
 QuadraticField::QuadraticField(Rational root_) {
@@ -171,15 +146,18 @@ QuadraticField::QuadraticField(Rational root_) {
 	Root[0] = root_;
 	name = std::string();
 
-	Result = std::vector<Rational>(degree);
+	Result = Scratch = std::vector<Rational>(degree);
 }
 
 QuadraticField::QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_) {
-	degree = 2*basefield_->GetDegree();
+	basefield = basefield_;
+	degree = 2*basefield->GetDegree();
 	if(basefield->GetDegree() == root_.size())
 		Root = root_;
 	else
-		Root = std::vector<Rational>(basefield_->GetDegree());
+		Root = std::vector<Rational>(basefield->GetDegree());
+
+	Result = Scratch = std::vector<Rational>(degree);
 }
 
 
@@ -272,29 +250,6 @@ bool QuadraticField::FindSqrt(std::vector<Rational> root_) {
 
 }
 
-
-void QuadraticField::Product(std::vector<Rational> a, std::vector<Rational> b) {
-	if(a.size() < degree || b.size() < degree)
-		return;
-	else {
-
-	}
-}
-
-std::string QuadraticField::Print(Rational *element){
-	if (degree == 2) {
-		name = element[0].print();
-		name += std::string(" + ");
-		name += element[1].print();
-		name += std::string(" (");
-		name += Root[0].print();
-		name += std::string(")^1/2");
-		return name;
-	}
-	else
-		return std::string("Missed it?");
-}
-
 std::string QuadraticField::Print(std::vector<Rational> element){
 	if (degree == 2) {
 		name = element[0].print();
@@ -302,9 +257,130 @@ std::string QuadraticField::Print(std::vector<Rational> element){
 		name += element[1].print();
 		name += std::string(" (");
 		name += Root[0].print();
-		name += std::string(")^1/2");
+		name += std::string(")^0.5");
 		return name;
 	}
-	else
-		return std::string("Missed it?");
+	else {
+		CoordinateChunk x = CoordinateChunk(&element, 0, degree);
+		return Print(x);
+
+	}
+}
+
+std::string QuadraticField::Print(CoordinateChunk x){
+	if (degree == 2) {
+		name = x.Get(0).print();
+		name += std::string(" + ");
+		name += x.Get(1).print();
+		name += std::string(" (");
+		name += Root[0].print();
+		name += std::string(")^0.5");
+		return name;
+	}
+	else {
+		name = basefield->Print(x);
+		name += std::string(" + (");
+		name += basefield->Print(CoordinateChunk(x.coords, degree/2, degree/2));
+		name += std::string(") (");
+		name += basefield->Print(Root);
+		name += std::string(")^0.5");
+		return name;
+
+	}
+}
+
+void QuadraticField::ZeroResult() {
+	for(int i =0; i<degree; i++)
+		Result[i] = Rational(0,1);
+}
+
+void QuadraticField::SetResult(std::vector<Rational>& Result_) {
+	for(int i=0; i<degree; i++)
+		Result[i] = Result_[i];
+}
+
+QuadraticField QuadraticField::operator+ (std::vector<Rational> & other) {
+	QuadraticField dummyfield(this, Root);
+	for(int i=0; i<degree; i++)
+		dummyfield.Result[i] = Result[i]+other[i];
+	return dummyfield;
+}
+
+void QuadraticField::Sum(std::vector<Rational> &a, std::vector<Rational> &b){
+	for(int i=0; i<degree; i++)
+		Result[i] = a[i] + b[i];
+}
+
+void QuadraticField::Product(std::vector<Rational> &a, std::vector<Rational> &b) {
+	if(degree == 2) {
+		Result[0] = a[0]*b[0] + Root[0]*a[1]*b[1];
+		Result[1] = a[0]*b[1] + a[1]*b[0];
+	} else {
+		// Make CoordinateChunk 's and then call Product(CoordinateChunk, CoordinateChunk, CoordinateChunk)
+		CoordinateChunk x,y,z;
+		x = CoordinateChunk(&a, 0, degree);
+		y = CoordinateChunk(&b, 0, degree);
+		z = CoordinateChunk(&Result, 0, degree);
+		Product(x,y,z);
+	}
+}
+
+void QuadraticField::Product(CoordinateChunk a, CoordinateChunk b, CoordinateChunk Result_) {
+	//All CoordinateChunk.size should match degree
+	if(degree==2) {
+		Result_.Get(0) = a.Get(0)*b.Get(0) + Root[0]*a.Get(1)*b.Get(1);
+		Result_.Get(1) = a.Get(1)*b.Get(0) + a.Get(0)*b.Get(1);
+	} else {
+
+		// Containers for recursion
+		CoordinateChunk x,y,z;
+
+		// First multiply the like terms and the root
+
+		x = CoordinateChunk(a.coords, 0, degree/2);
+		y = CoordinateChunk(b.coords, 0, degree/2);
+		z = CoordinateChunk(Result_.coords, 0, degree/2);
+		basefield->Product(x,y,z);
+
+		x = CoordinateChunk(a.coords, degree/2, degree/2);
+		y = CoordinateChunk(b.coords, degree/2, degree/2);
+		z = CoordinateChunk(Result_.coords, degree/2, degree/2);
+		basefield->Product(x,y,z);
+
+		x = z;
+		y = CoordinateChunk(&Root, 0, degree/2);
+		z = CoordinateChunk(&Scratch, 0, degree/2);
+		basefield->Product(x,y,z);
+
+		for(int i=0; i<degree/2; i++)
+			Result_.Get(i) = Result_.Get(i) + Scratch[i];
+
+		// Now the cross terms
+		x = CoordinateChunk(a.coords, 0, degree/2);
+		y = CoordinateChunk(b.coords, degree/2, degree/2);
+		z = CoordinateChunk(Result_.coords, degree/2, degree/2);
+		basefield->Product(x,y,z);
+
+		x = CoordinateChunk(a.coords, degree/2, degree/2);
+		y = CoordinateChunk(b.coords, 0, degree/2);
+		z = CoordinateChunk(&Scratch, 0, degree/2);
+		basefield->Product(x,y,z);
+
+		for(int i=0; i<degree/2; i++)
+			Result_.Get(degree/2+i) = Result_.Get(degree/2+i) + Scratch[i];
+	}
+}
+
+////////////////////////////////////////
+
+CoordinateChunk::CoordinateChunk() {
+	size = 0;
+	offset = 0;
+	coords = nullptr;
+}
+
+CoordinateChunk::CoordinateChunk(std::vector<Rational>* coords_, int offset_, int size_) {
+	size_ = size;
+	offset = offset_;
+	coords = coords_;
 }
