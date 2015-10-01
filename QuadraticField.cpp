@@ -267,6 +267,27 @@ std::string QuadraticField::Print(std::vector<Rational> element){
 	}
 }
 
+std::string QuadraticField::PrintR(std::vector<Rational> coords) {
+	std::string name=std::string();
+	std::ostringstream convert;
+
+	for(int i=0; i<degree; i++) {
+		if(i != 0)
+			name += std::string(" + ");
+		name += coords[i].print();
+		if(i != 0)
+			name += std::string(" ");
+		for(int j=1, k=1; j<degree; j*=2, k++) {
+			if((i/j)%2==1) {
+				convert << k;
+				name += std::string("R") += std::string(convert.str());
+				convert.str(std::string());
+			}
+		}
+	}
+	return name;
+}
+
 std::string QuadraticField::Print(CoordinateChunk x){
 	if (degree == 2) {
 		name = x.Get(0).print();
@@ -296,6 +317,14 @@ std::string QuadraticField::PrintName() {
 	return name;
 }
 
+std::string QuadraticField::PrintNameR() {
+	std::string name = std::string("Q(");
+	name += PrintRootListR();
+	name += std::string(")");
+	return name;
+
+}
+
 std::string QuadraticField::PrintRootList() {
 	std::string name = std::string("");
 	if(degree==2) {
@@ -308,6 +337,31 @@ std::string QuadraticField::PrintRootList() {
 		name += basefield->Print(Root);
 		name += std::string(")^0.5, ");
 		name += basefield->PrintRootList();
+	}
+	return name;
+}
+
+std::string QuadraticField::PrintRootListR() {
+	std::string name = std::string();
+	std::ostringstream convert;
+	int rootnum=0, power=1;
+
+	if(degree==2) {
+		name += std::string("R1 = Sqrt(");
+		name += Root[0].print();
+		name += std::string(")");
+	}
+	else {
+		//compute the logarithm of degree
+		do {
+			rootnum++;
+			power*=2;
+		}while(power < degree);
+		convert << rootnum;
+		name += std::string("R") += convert.str() += std::string(" = Sqrt(");
+		name += basefield->PrintR(Root);
+		name += std::string("), ");
+		name += basefield->PrintRootListR();
 	}
 	return name;
 }
