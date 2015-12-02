@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void main() {
+int main() {
 
 	QuadraticField Q;
 	Rational r, sum, product;
@@ -75,4 +75,6 @@ void main() {
 	}
 	cout << "A pause. Enter anything.";
 	cin >> p;
+
+	return 0;
 }
