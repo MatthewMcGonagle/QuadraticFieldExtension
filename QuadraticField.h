@@ -42,10 +42,12 @@ class FieldElement {
 public:
 	FieldElement();
 	FieldElement(QuadraticField* field_, std::vector<Rational>::iterator coords_);
+	
+	std::string Print();
+
 	std::vector<Rational>::iterator coords;
 	QuadraticField* field;
 
-	std::string Print();
 };
 
 //////////////////////////////////

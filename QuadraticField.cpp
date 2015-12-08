@@ -138,10 +138,26 @@ FieldElement::FieldElement(QuadraticField* field_, std::vector<Rational>::iterat
 }
 
 std::string FieldElement::Print() {
+	int whichroots, currentroot;
+	std::ostringstream ss;
 	std::string name = std::string();
 	for(int i=0; i < field->GetDegree(); i++) {
+		if(i > 0)
+			name += " + ";
 		name += coords[i].print();
-		name += " ";
+		whichroots = i;	
+		currentroot = 1;
+		if(i > 0)
+			name += " ";
+		while(whichroots > 0) {
+			if(whichroots % 2 == 1) { 
+				ss.str(std::string());	
+				ss << currentroot;
+				name += "r" + ss.str();
+			}
+			whichroots /= 2;
+			currentroot++;
+		}
 	}
 	return name;
 }
