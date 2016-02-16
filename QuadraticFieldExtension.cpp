@@ -20,11 +20,14 @@ int main() {
 	coords[3] = Rational(3,4);
 	FieldElement elem2 = FieldElement(&F2, coords.begin());
 
+	QuadraticField F3 = QuadraticField(&F2, coords);
+
 	std::cout << "Rational q = " << q.print() << std::endl;
-	std::cout << "Field F1 = Q( (" << q.print() << ")^(1/2) )" << std::endl;
+	std::cout << "Field F1 = " << F1.Print() << std::endl;
 	std::cout << "elem1 = " << elem1.Print() << std::endl;
-	std::cout << "Field F2 = Q( (" << elem1.Print() << ")^(1/2) )" << std::endl;
+	std::cout << "Field F2 = " << F2.Print() << std::endl;
 	std::cout << "elem2 = " << elem2.Print() << std::endl;
+	std::cout << "Field F3 = " << F3.Print() << std::endl;	
 	return 0;
 
 }

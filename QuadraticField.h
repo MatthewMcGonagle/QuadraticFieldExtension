@@ -38,6 +38,7 @@ private:
 
 class QuadraticField;
 
+// For quick computation, should only overload *= and += ?
 class FieldElement {
 public:
 	FieldElement();
@@ -61,14 +62,19 @@ public:
 	~QuadraticField();
 
 	int GetDegree(){return degree;}
+	int GetExtensionIndex(){return extensioni;}
+	FieldElement GetRoot();
+	std::string Print();
 
 	static const int numscratch = 3;	
 	std::vector<Rational> Scratch[numscratch];
 	std::vector<Rational> Result;
 
 private:
-	int degree;
+	int degree, extensioni;
 	std::vector<Rational> Root;
 	QuadraticField* basefield;
 	std::string name;
+
+	std::string PrintRootList();
 };

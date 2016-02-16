@@ -178,6 +178,7 @@ QuadraticField::QuadraticField() {
 
 QuadraticField::QuadraticField(Rational root_) {
 	degree = 2;
+	extensioni = 1;
 	Root = std::vector<Rational>(1);
 	basefield = NULL;
 
@@ -192,6 +193,7 @@ QuadraticField::QuadraticField(Rational root_) {
 QuadraticField::QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_) {
 	basefield = basefield_;
 	degree = 2*basefield->GetDegree();
+	extensioni = 1+basefield->GetExtensionIndex();
 	if(basefield->GetDegree() == root_.size())
 		Root = root_;
 	else
@@ -207,3 +209,50 @@ QuadraticField::~QuadraticField() {
 
 }
 
+FieldElement QuadraticField::GetRoot() {
+	return FieldElement(this, Root.begin()); 
+}
+
+std::string QuadraticField::Print() {
+	std::ostringstream oss;
+	std::string name = std::string();
+
+	name += "Q( ";
+	int idegree = degree, rootnum = 1;
+	while (idegree > 1) {	
+		name += "r";
+		oss.str(std::string());
+		oss << rootnum;
+		name += oss.str();
+		if (idegree > 2)
+			name += ", ";
+		idegree /= 2;
+		rootnum++;
+	}
+	name += ") where\n";
+	name += PrintRootList();	
+	return name;	
+}
+
+std::string QuadraticField::PrintRootList() {
+	std::ostringstream oss;
+	std::string name = std::string();
+	if (degree > 2) {
+		name += basefield->PrintRootList();
+		FieldElement myroot = FieldElement(basefield, Root.begin());
+		oss.str(std::string());
+		oss << extensioni;
+		name += "r";
+		name += oss.str();
+		name += " = Sqrt of ";
+		name += myroot.Print();
+		name += "\n";
+	}
+	else {
+		name += "r1 = Sqrt of ";
+		name += Root[0].print();
+		name += "\n";	
+	}
+
+	return name;
+}
