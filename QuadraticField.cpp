@@ -132,7 +132,7 @@ FieldElement::FieldElement() {
 
 }
 
-FieldElement::FieldElement(QuadraticField* field_, std::vector<Rational>::iterator coords_) {
+FieldElement::FieldElement(QuadraticField* field_, std::vector<Rational> coords_) {
 	field = field_;
 	coords = coords_;
 }
@@ -162,6 +162,131 @@ std::string FieldElement::Print() {
 	return name;
 }
 
+
+FieldElement& FieldElement::operator+=(const FieldElement& rhs) {
+	int maxindex = field->GetDegree();
+	if(rhs.field->GetDegree() < maxindex)
+		maxindex = rhs.field->GetDegree();
+
+	for(int i=0; i < maxindex; i++) 
+		coords[i] = coords[i] + rhs.coords[i];	
+	return *this;
+}
+
+FieldElement& FieldElement::operator*=(const FieldElement& rhs) {
+	multiply(coords.begin(), rhs.coords.begin());
+}
+
+FieldElement FieldElement::subfieldelem(int n) {
+	return FieldElement(field->GetBaseField(), field->Scratch[n]);
+}
+
+//// Can probably do this without induction and use bitwise operations. Multiply by one rhs Rational coordinate at a time. Keep track of which roots get squared (bitwise AND) and which do not (bitwise XOR). Then put in right place?
+void FieldElement::multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs) {
+	int mydegree = field->GetDegree();
+	std::vector<Rational> scratch = std::vector<Rational>(mydegree/2, Rational(0,1));
+
+	if(mydegree == 2) {
+		scratch[0] = lhs[0]*rhs[0] + lhs[1]*rhs[1] * field->GetRoot().coords[0];
+		lhs[1] = lhs[0]*rhs[1] + lhs[1]*rhs[0];
+	       	lhs[0] = scratch[0];
+	}
+	else {
+		
+	}
+
+}
+//////////////////////////////////////////////
+
+QuadraticFieldTower::QuadraticFieldTower(Rational square_) {
+	squares = std::vector< std::vector<Rational> >(1, std::vector<Rational>(1, square_) );
+	degree = 2;
+	numsquares = 1; 
+}
+
+void QuadraticFieldTower::AddSquare(std::vector<Rational> coords) {
+	if (coords.size() == degree) {
+		squares.push_back(coords);
+		degree *= 2;
+		numsquares++;	
+	}
+	
+}
+
+void QuadraticFieldTower::Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs) {
+	if(degree = lhs.size() && degree == rhs.size() ) {
+		for(int i=0; i< degree; i++)
+			lhs[i] = lhs[i] + rhs[i];
+	}
+}
+
+std::string QuadraticFieldTower::Print() {
+	std::ostringstream oss;
+	std::string name = std::string();
+
+	name += "Q( ";
+	for(int i=0; i<numsquares; i++){
+		name += "r";
+		oss.str(std::string());
+		oss << i+1;
+		name += oss.str();
+		if(i < numsquares-1)
+			name += ", ";		
+	}
+	
+	name += " ) where\n";
+	name += PrintRootList();
+	return name;	
+
+}
+
+std::string QuadraticFieldTower::PrintRootList() {
+	std::ostringstream oss;
+	std::string name = std::string();
+	int numcoords = 1, whichroot, reducedindex;
+
+	for(int i = 0; i < numsquares; i++, numcoords *= 2) {
+		name += "r";
+		oss.str(std::string());
+		oss << i;
+		name += oss.str();
+		name += " = Sqrt( ";
+		name += PrintCoords(squares[i]);	
+		name += " )\n";		
+	}
+	return name;
+}
+
+std::string QuadraticFieldTower::PrintCoords(std::vector<Rational> & coords) {
+	std::ostringstream oss;
+	std::string name = std::string();
+	int whichroot, reducedindex; 
+
+	if(coords.size() > degree)
+		return std::string("Error coordinate sizes don't match");
+
+	for(int j=0; j < coords.size(); j++) {
+			name += coords[j].print();
+			if(j > 0)
+		        	name += " ";	
+			reducedindex = j;
+			whichroot = 1;
+			while(reducedindex > 0) {
+				if(reducedindex % 2 != 0) {
+					name += "r";
+					oss.str(std::string());
+				        oss << whichroot;
+					name += oss.str();	
+				}
+				reducedindex /=2;
+				whichroot++;
+			}
+			if(j < coords.size()-1)
+				name += " + ";	
+	}
+
+	return name;	
+}
 //////////////////////////////////////////////
 
 QuadraticField::QuadraticField() {
@@ -210,7 +335,7 @@ QuadraticField::~QuadraticField() {
 }
 
 FieldElement QuadraticField::GetRoot() {
-	return FieldElement(this, Root.begin()); 
+	return FieldElement(this, Root); 
 }
 
 std::string QuadraticField::Print() {
@@ -239,7 +364,7 @@ std::string QuadraticField::PrintRootList() {
 	std::string name = std::string();
 	if (degree > 2) {
 		name += basefield->PrintRootList();
-		FieldElement myroot = FieldElement(basefield, Root.begin());
+		FieldElement myroot = FieldElement(basefield, Root);
 		oss.str(std::string());
 		oss << extensioni;
 		name += "r";

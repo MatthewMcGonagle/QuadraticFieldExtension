@@ -42,17 +42,36 @@ class QuadraticField;
 class FieldElement {
 public:
 	FieldElement();
-	FieldElement(QuadraticField* field_, std::vector<Rational>::iterator coords_);
+	FieldElement(QuadraticField* field_, std::vector<Rational> coords_);
 	
 	std::string Print();
+	FieldElement& operator+=(const FieldElement& rhs);
+	FieldElement& operator*=(const FieldElement& rhs);
 
-	std::vector<Rational>::iterator coords;
+	std::vector<Rational> coords;
 	QuadraticField* field;
 
+private:
+
+	FieldElement subfieldelem(int n);
+	void multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs);
 };
 
 //////////////////////////////////
+class QuadraticFieldTower {
+	public:
+		QuadraticFieldTower(Rational Square_);
+		void AddSquare(std::vector<Rational> coords);
+		void Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
+		std::string Print();
+		std::string PrintRootList();
+		std::string PrintCoords(std::vector<Rational> & coords);
 
+	private:
+		int degree, numsquares;
+		std::vector< std::vector<Rational> > squares;
+};
+//////////////////////////////////
 class QuadraticField {
 
 public:
@@ -63,6 +82,7 @@ public:
 
 	int GetDegree(){return degree;}
 	int GetExtensionIndex(){return extensioni;}
+	QuadraticField* GetBaseField() { return basefield;}
 	FieldElement GetRoot();
 	std::string Print();
 
