@@ -214,10 +214,14 @@ void QuadraticFieldTower::AddSquare(std::vector<Rational> coords) {
 }
 
 void QuadraticFieldTower::Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs) {
-	if(degree = lhs.size() && degree == rhs.size() ) {
-		for(int i=0; i< degree; i++)
-			lhs[i] = lhs[i] + rhs[i];
-	}
+	int coordsize;
+
+	// If lhs.size() < rhs.size(), then need to resize lhs.
+	lhs.resize (rhs.size(), Rational(0,1));
+	coordsize = lhs.size();
+
+	for(int i=0; i < coordsize; i++)
+		lhs[i] = lhs[i] + rhs[i];
 }
 
 std::string QuadraticFieldTower::Print() {
@@ -248,7 +252,7 @@ std::string QuadraticFieldTower::PrintRootList() {
 	for(int i = 0; i < numsquares; i++, numcoords *= 2) {
 		name += "r";
 		oss.str(std::string());
-		oss << i;
+		oss << i+1;
 		name += oss.str();
 		name += " = Sqrt( ";
 		name += PrintCoords(squares[i]);	
@@ -263,7 +267,7 @@ std::string QuadraticFieldTower::PrintCoords(std::vector<Rational> & coords) {
 	int whichroot, reducedindex; 
 
 	if(coords.size() > degree)
-		return std::string("Error coordinate sizes don't match");
+		return std::string("Coordinate Size Greater Than Degree");
 
 	for(int j=0; j < coords.size(); j++) {
 			name += coords[j].print();
