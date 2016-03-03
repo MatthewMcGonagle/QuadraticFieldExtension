@@ -217,11 +217,74 @@ void QuadraticFieldTower::Add(std::vector<Rational> & lhs, std::vector<Rational>
 	int coordsize;
 
 	// If lhs.size() < rhs.size(), then need to resize lhs.
-	lhs.resize (rhs.size(), Rational(0,1));
+	if(lhs.size() < rhs.size())	
+		lhs.resize (rhs.size(), Rational(0,1));
 	coordsize = lhs.size();
 
 	for(int i=0; i < coordsize; i++)
 		lhs[i] = lhs[i] + rhs[i];
+}
+
+void QuadraticFieldTower::Product(std::vector<Rational> & lhs, std::vector<Rational> & rhs) {
+	int coordsize, coordi, newcoordi, whichroot, roottest;
+	std::vector<Rational> scratch, finalanswer;
+	std::vector<int> exponents;
+	
+
+	if(lhs.size() < rhs.size())
+		lhs.resize( rhs.size(), Rational(0,1));
+	coordsize = lhs.size();
+	exponents = std::vector<int>(coordsize, 0);
+	finalanswer = scratch = std::vector<Rational>(coordsize, Rational(0,1));
+	
+
+	for(int i=0; i < coordsize; i++) {
+		for(int j = 0; j < rhs.size(); j++) { 
+			scratch[i | j] = lhs[i] * rhs[j];
+
+			// use exponents[j] to record for each coordinate, which
+			// roots get squared.
+			
+			exponents[j] = i & j;	
+		}
+
+		// Now replace ri^2 by their respective Rational coordinates.
+		// Go from low coordinates r1 to high coordinates.
+		
+		coordi = 0;
+		while(coordi < rhs.size()) {
+			if(exponents[coordi] == 0) {
+				finalanswer[coordi] = finalanswer[coordi] + scratch[coordi];
+				scratch[coordi] = Rational(0,1);	
+			}
+			else {
+				whichroot = 0;
+				roottest = 1;
+				while(whichroot < numsquares && (exponents[coordi] & roottest) == 0) {
+					roottest = roottest << 1;
+					whichroot++;
+				}
+				if(whichroot < numsquares) {
+					// Use a bitwise XOR to remove the square from exponents list
+					exponents[coordi] = exponents[coordi] ^ roottest;
+					// Add in coordinates of square with scaling by scratch[coordi]
+					for(int j = 0; j < squares[whichroot].size(); j++) {
+						newcoordi = j | (coordi ^ roottest);
+						scratch[newcoordi] = scratch[coordi] * squares[whichroot][j];
+						exponents[newcoordi] = (j & coordi) | exponents[coordi]; 
+					}
+					exponents[coordi] = 0;
+					scratch[coordi] = Rational(0,1);
+					coordi = -1;	
+				}
+
+			}
+			coordi++;
+		}	
+	}
+
+	for(int i = 0; i < coordsize; i++)
+		lhs[i] = finalanswer[i];	
 }
 
 std::string QuadraticFieldTower::Print() {

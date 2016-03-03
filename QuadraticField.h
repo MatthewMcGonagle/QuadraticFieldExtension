@@ -1,6 +1,7 @@
 //Author: Matthew McGonagle
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <vector>
 
 class Rational {
@@ -63,6 +64,7 @@ class QuadraticFieldTower {
 		QuadraticFieldTower(Rational Square_);
 		void AddSquare(std::vector<Rational> coords);
 		void Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
+		void Product(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
 		std::string Print();
 		std::string PrintRootList();
 		std::string PrintCoords(std::vector<Rational> & coords);

@@ -25,7 +25,15 @@ int main() {
 	std::cout << "   ( " << fieldtower.PrintCoords(coords) << " )"  << std::endl
 		  << " + ( " << fieldtower.PrintCoords(coords2) << " )" << std::endl;
 	fieldtower.Add(coords, coords2);
-	std::cout << " = " << fieldtower.PrintCoords(coords);
+	std::cout << " = " << fieldtower.PrintCoords(coords) << std::endl << std::endl;
+
+	coords.resize(2);
+	coords[0] = Rational(1,1);
+	coords[1] = Rational(1,1);
+	std::cout << "   (" << fieldtower.PrintCoords(coords) << ")" << std::endl
+		  << " * (" << fieldtower.PrintCoords(coords) << ")" << std::endl;
+	fieldtower.Product(coords, coords);
+	std::cout << " =  " << fieldtower.PrintCoords(coords);
 
 	return 0;
 
