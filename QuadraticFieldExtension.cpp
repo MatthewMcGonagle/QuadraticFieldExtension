@@ -10,7 +10,8 @@ int main() {
 	Rational q = Rational(1,2);
 	QuadraticFieldTower fieldtower(q);
 	std::vector<Rational> root(2, Rational(1,2)), coords(4), coords2(4);
-	
+	std::complex<float> check1, check2;
+
 	fieldtower.AddSquare(root);
 
 	for(int i=0; i < 4; i++) {
@@ -32,9 +33,16 @@ int main() {
 	coords[1] = Rational(1,1);
 	std::cout << "   (" << fieldtower.PrintCoords(coords) << ")" << std::endl
 		  << " * (" << fieldtower.PrintCoords(coords) << ")" << std::endl;
-	fieldtower.Product(coords, coords);
-	std::cout << " =  " << fieldtower.PrintCoords(coords);
+	check1 = fieldtower.CoordsToComplex(coords);
+	check1 *= check1;
 
+	fieldtower.Product(coords, coords);
+	std::cout << " =  " << fieldtower.PrintCoords(coords) << std::endl;
+	check2 = fieldtower.CoordsToComplex(coords);
+
+	std::cout << "Numerical double check" << std::endl
+		  << "check1 = " << check1 << std::endl
+		  << "check2 = " << check2 << std::endl;
 	return 0;
 
 }

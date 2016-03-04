@@ -126,6 +126,11 @@ bool Rational::FindSqrt() {
 		return false;
 }
 
+float Rational::ToFloat() {
+	float result = num;
+        result /= den;
+	return result;	
+}
 
 //////////////////////////////////////////////
 FieldElement::FieldElement() {
@@ -199,18 +204,40 @@ void FieldElement::multiply(std::vector<Rational>::iterator lhs, std::vector<Rat
 //////////////////////////////////////////////
 
 QuadraticFieldTower::QuadraticFieldTower(Rational square_) {
+	std::complex<float> newcomplexroot = std::complex<float>(square_.ToFloat(), 0);
+	newcomplexroot = std::sqrt(newcomplexroot);
+
 	squares = std::vector< std::vector<Rational> >(1, std::vector<Rational>(1, square_) );
+	complexroots = std::vector< std::complex<float> >(1, newcomplexroot); 
 	degree = 2;
 	numsquares = 1; 
 }
 
 void QuadraticFieldTower::AddSquare(std::vector<Rational> coords) {
+	std::complex<float> result(0.0, 0.0), temp(0.0, 0.0);
+	int whichsquare, mask;
+
 	if (coords.size() == degree) {
 		squares.push_back(coords);
+		for(int i=0; i<degree; i++) {
+			temp = std::complex<float>(1.0,0.0);
+			whichsquare = 0;
+			mask = 1;
+			while(mask < degree) {
+				if( i & mask != 0) {
+					temp *= complexroots[whichsquare];
+				}	
+				mask *= 2;
+				whichsquare++;
+			}
+			temp *= std::complex<float>( coords[i].ToFloat(), 0.0);
+			result += temp;	
+		}
+		complexroots.push_back(std::sqrt(result));	
 		degree *= 2;
 		numsquares++;	
 	}
-	
+
 }
 
 void QuadraticFieldTower::Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs) {
@@ -245,7 +272,7 @@ void QuadraticFieldTower::Product(std::vector<Rational> & lhs, std::vector<Ratio
 			// use exponents[j] to record for each coordinate, which
 			// roots get squared.
 			
-			exponents[j] = i & j;	
+			exponents[i] = i & j;	
 		}
 
 		// Now replace ri^2 by their respective Rational coordinates.
@@ -254,7 +281,7 @@ void QuadraticFieldTower::Product(std::vector<Rational> & lhs, std::vector<Ratio
 		coordi = 0;
 		while(coordi < rhs.size()) {
 			if(exponents[coordi] == 0) {
-				finalanswer[coordi] = finalanswer[coordi] + scratch[coordi];
+				finalanswer[coordi | i] = finalanswer[coordi | i] + scratch[coordi];
 				scratch[coordi] = Rational(0,1);	
 			}
 			else {
@@ -353,6 +380,27 @@ std::string QuadraticFieldTower::PrintCoords(std::vector<Rational> & coords) {
 	}
 
 	return name;	
+}
+
+std::complex<float> QuadraticFieldTower::CoordsToComplex(std::vector<Rational> & coords) {
+	std::complex<float> result(0,0), temp;
+	int whichroot, mask;
+
+	for(int i=0; i<coords.size(); i++) {
+		temp = std::complex<float>(1.0, 0.0);
+		whichroot = 0;
+		mask = 1;
+		while(mask < coords.size()) {
+			if(i & mask != 0) {
+				temp *= complexroots[whichroot];
+			}
+			mask *= 2;
+			whichroot++;
+		}
+		temp *= std::complex<float>( coords[i].ToFloat(), 0.0);
+		result += temp;
+	}
+	return result;
 }
 //////////////////////////////////////////////
 

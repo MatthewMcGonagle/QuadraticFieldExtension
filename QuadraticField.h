@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <complex>
 
 class Rational {
 public:
@@ -23,6 +24,7 @@ public:
 	int GetSqrtP(){return sqrtp;}
 	int GetSqrtQ(){return sqrtq;}
 	Rational GetSqrt(){return Rational(sqrtp, sqrtq);}
+	float ToFloat();
 
 private:
 
@@ -68,10 +70,12 @@ class QuadraticFieldTower {
 		std::string Print();
 		std::string PrintRootList();
 		std::string PrintCoords(std::vector<Rational> & coords);
+		std::complex<float> CoordsToComplex(std::vector<Rational> & coords);
 
 	private:
 		int degree, numsquares;
 		std::vector< std::vector<Rational> > squares;
+		std::vector< std::complex<float> > complexroots;
 };
 //////////////////////////////////
 class QuadraticField {
