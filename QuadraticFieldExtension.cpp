@@ -28,9 +28,11 @@ int main() {
 	fieldtower.Add(coords, coords2);
 	std::cout << " = " << fieldtower.PrintCoords(coords) << std::endl << std::endl;
 
-	coords.resize(2);
+	//coords.resize(2);
 	coords[0] = Rational(1,1);
-	coords[1] = Rational(1,1);
+	coords[1] = Rational(0,1);
+	coords[2] = Rational(0,1);
+	coords[3] = Rational(1,1);	
 	std::cout << "   (" << fieldtower.PrintCoords(coords) << ")" << std::endl
 		  << " * (" << fieldtower.PrintCoords(coords) << ")" << std::endl;
 	check1 = fieldtower.CoordsToComplex(coords);
@@ -43,6 +45,7 @@ int main() {
 	std::cout << "Numerical double check" << std::endl
 		  << "check1 = " << check1 << std::endl
 		  << "check2 = " << check2 << std::endl;
+	
 	return 0;
 
 }

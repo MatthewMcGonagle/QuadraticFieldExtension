@@ -126,8 +126,8 @@ bool Rational::FindSqrt() {
 		return false;
 }
 
-float Rational::ToFloat() {
-	float result = num;
+double Rational::ToFloat() {
+	double result = num;
         result /= den;
 	return result;	
 }
@@ -204,36 +204,37 @@ void FieldElement::multiply(std::vector<Rational>::iterator lhs, std::vector<Rat
 //////////////////////////////////////////////
 
 QuadraticFieldTower::QuadraticFieldTower(Rational square_) {
-	std::complex<float> newcomplexroot = std::complex<float>(square_.ToFloat(), 0);
+	std::complex<double> newcomplexroot = std::complex<double>(square_.ToFloat(), 0);
 	newcomplexroot = std::sqrt(newcomplexroot);
 
 	squares = std::vector< std::vector<Rational> >(1, std::vector<Rational>(1, square_) );
-	complexroots = std::vector< std::complex<float> >(1, newcomplexroot); 
+	complexroots = std::vector< std::complex<double> >(1, newcomplexroot); 
 	degree = 2;
 	numsquares = 1; 
 }
 
 void QuadraticFieldTower::AddSquare(std::vector<Rational> coords) {
-	std::complex<float> result(0.0, 0.0), temp(0.0, 0.0);
+	std::complex<double> result(0.0, 0.0), temp(0.0, 0.0);
 	int whichsquare, mask;
 
 	if (coords.size() == degree) {
 		squares.push_back(coords);
 		for(int i=0; i<degree; i++) {
-			temp = std::complex<float>(1.0,0.0);
+			temp = std::complex<double>(1.0,0.0);
 			whichsquare = 0;
 			mask = 1;
 			while(mask < degree) {
-				if( i & mask != 0) {
+				if( (i & mask) != 0) {
 					temp *= complexroots[whichsquare];
 				}	
 				mask *= 2;
 				whichsquare++;
 			}
-			temp *= std::complex<float>( coords[i].ToFloat(), 0.0);
+			temp *= std::complex<double>( coords[i].ToFloat(), 0.0);
 			result += temp;	
 		}
-		complexroots.push_back(std::sqrt(result));	
+		result = std::sqrt(result);
+		complexroots.push_back(result);
 		degree *= 2;
 		numsquares++;	
 	}
@@ -262,28 +263,39 @@ void QuadraticFieldTower::Product(std::vector<Rational> & lhs, std::vector<Ratio
 		lhs.resize( rhs.size(), Rational(0,1));
 	coordsize = lhs.size();
 	exponents = std::vector<int>(coordsize, 0);
-	finalanswer = scratch = std::vector<Rational>(coordsize, Rational(0,1));
+	finalanswer = std::vector<Rational>(coordsize, Rational(0,1));
+	scratch = std::vector<Rational>(coordsize, Rational(0,1));
 	
 
+	// nth bit of coordinate index indicates if this coordinate has the nth root
+	
 	for(int i=0; i < coordsize; i++) {
-		for(int j = 0; j < rhs.size(); j++) { 
-			scratch[i | j] = lhs[i] * rhs[j];
+		for(int j = 0; j < rhs.size(); j++) {
+
+		        // XOR keeps only the roots with one power	
+			scratch[i ^ j] = lhs[i] * rhs[j];
 
 			// use exponents[j] to record for each coordinate, which
 			// roots get squared.
-			
-			exponents[i] = i & j;	
+		
+			// Bitwise AND keeps roots that are squared	
+			exponents[i ^ j] = i & j;	
 		}
 
 		// Now replace ri^2 by their respective Rational coordinates.
 		// Go from low coordinates r1 to high coordinates.
 		
 		coordi = 0;
-		while(coordi < rhs.size()) {
+		while(coordi < coordsize) {
+
+			// If there are no squared roots then process into final answer
+			
 			if(exponents[coordi] == 0) {
-				finalanswer[coordi | i] = finalanswer[coordi | i] + scratch[coordi];
+				finalanswer[coordi] = finalanswer[coordi] + scratch[coordi];
 				scratch[coordi] = Rational(0,1);	
 			}
+
+			// The case that there are squared roots
 			else {
 				whichroot = 0;
 				roottest = 1;
@@ -295,13 +307,19 @@ void QuadraticFieldTower::Product(std::vector<Rational> & lhs, std::vector<Ratio
 					// Use a bitwise XOR to remove the square from exponents list
 					exponents[coordi] = exponents[coordi] ^ roottest;
 					// Add in coordinates of square with scaling by scratch[coordi]
-					for(int j = 0; j < squares[whichroot].size(); j++) {
-						newcoordi = j | (coordi ^ roottest);
+					// Note that newcoordi==coordi when j=0. We need to use
+					// scratch[coordi] in loop, so wait to handle this case until
+					// after the loop.
+					for(int j = 1; j < squares[whichroot].size(); j++) {
+						newcoordi = j ^ coordi;
 						scratch[newcoordi] = scratch[coordi] * squares[whichroot][j];
 						exponents[newcoordi] = (j & coordi) | exponents[coordi]; 
 					}
-					exponents[coordi] = 0;
-					scratch[coordi] = Rational(0,1);
+
+					// Now handle the j=0 case. exponents[coordi] is already correct.	
+					scratch[coordi] = scratch[coordi]*squares[whichroot][0];
+
+					// Set up coordi to start loop from beginning
 					coordi = -1;	
 				}
 
@@ -382,22 +400,22 @@ std::string QuadraticFieldTower::PrintCoords(std::vector<Rational> & coords) {
 	return name;	
 }
 
-std::complex<float> QuadraticFieldTower::CoordsToComplex(std::vector<Rational> & coords) {
-	std::complex<float> result(0,0), temp;
+std::complex<double> QuadraticFieldTower::CoordsToComplex(std::vector<Rational> & coords) {
+	std::complex<double> result(0.0,0.0), temp;
 	int whichroot, mask;
-
+	
 	for(int i=0; i<coords.size(); i++) {
-		temp = std::complex<float>(1.0, 0.0);
+		temp = std::complex<double>(1.0, 0.0);
 		whichroot = 0;
 		mask = 1;
 		while(mask < coords.size()) {
-			if(i & mask != 0) {
+			if((i & mask) != 0) {
 				temp *= complexroots[whichroot];
 			}
 			mask *= 2;
 			whichroot++;
 		}
-		temp *= std::complex<float>( coords[i].ToFloat(), 0.0);
+		temp *= std::complex<double>( coords[i].ToFloat(), 0.0);
 		result += temp;
 	}
 	return result;
