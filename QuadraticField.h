@@ -1,7 +1,9 @@
 //Author: Matthew McGonagle
 #include <string>
 #include <sstream>
+#include <iostream>
 #include <vector>
+#include <complex>
 
 class Rational {
 public:
@@ -22,6 +24,7 @@ public:
 	int GetSqrtP(){return sqrtp;}
 	int GetSqrtQ(){return sqrtq;}
 	Rational GetSqrt(){return Rational(sqrtp, sqrtq);}
+	double ToFloat();
 
 private:
 
@@ -36,19 +39,45 @@ private:
 
 //////////////////////////////////
 
-class CoordinateChunk {
-public:
-	CoordinateChunk();
-	CoordinateChunk(std::vector<Rational>* coords_, int offset_, int size_);
-	Rational& Get(int i) {return (*coords)[offset+i];}
+class QuadraticField;
 
-	std::vector<Rational>* coords;
-	int offset, size;
+// For quick computation, should only overload *= and += ?
+class FieldElement {
+public:
+	FieldElement();
+	FieldElement(QuadraticField* field_, std::vector<Rational> coords_);
+	
+	std::string Print();
+	FieldElement& operator+=(const FieldElement& rhs);
+	FieldElement& operator*=(const FieldElement& rhs);
+
+	std::vector<Rational> coords;
+	QuadraticField* field;
+
+private:
+
+	FieldElement subfieldelem(int n);
+	void multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs);
 };
 
-////////////////////////////////////////
+//////////////////////////////////
+class QuadraticFieldTower {
+	public:
+		QuadraticFieldTower(Rational Square_);
+		void AddSquare(std::vector<Rational> coords);
+		void Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
+		void Product(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
+		std::string Print();
+		std::string PrintRootList();
+		std::string PrintCoords(std::vector<Rational> & coords);
+		std::complex<double> CoordsToComplex(std::vector<Rational> & coords);
 
-
+	private:
+		int degree, numsquares;
+		std::vector< std::vector<Rational> > squares;
+		std::vector< std::complex<double> > complexroots;
+};
+//////////////////////////////////
 class QuadraticField {
 
 public:
@@ -56,31 +85,22 @@ public:
 	QuadraticField(Rational root);
 	QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_);
 	~QuadraticField();
-	bool FindSqrt(std::vector<Rational> root_);
-	std::string Print(std::vector<Rational> coordinates);
-	std::string Print(CoordinateChunk x);
-	std::string PrintR(std::vector<Rational> coordinates);
-	std::string PrintName();
-	std::string PrintNameR();
-	std::string PrintRootList();
-	std::string PrintRootListR();
 
-	int GetDegree() {return degree;}
-	std::vector<Rational> GetSqrt() {return Result;}
+	int GetDegree(){return degree;}
+	int GetExtensionIndex(){return extensioni;}
+	QuadraticField* GetBaseField() { return basefield;}
+	FieldElement GetRoot();
+	std::string Print();
 
-	void ZeroResult();
-	void SetResult(std::vector<Rational>& Result_);
-	QuadraticField operator+(std::vector<Rational> &other);
-	void Sum(std::vector<Rational> &a, std::vector<Rational> &b);
-	void Product(std::vector<Rational> &a, std::vector<Rational> &b);
-	void Product(CoordinateChunk a, CoordinateChunk b, CoordinateChunk Result_);
-	//QuadraticField operator*(Coordinates& other);
-
-	std::vector<Rational> Result, Scratch;
+	static const int numscratch = 3;	
+	std::vector<Rational> Scratch[numscratch];
+	std::vector<Rational> Result;
 
 private:
-	int degree;
+	int degree, extensioni;
 	std::vector<Rational> Root;
 	QuadraticField* basefield;
 	std::string name;
+
+	std::string PrintRootList();
 };
