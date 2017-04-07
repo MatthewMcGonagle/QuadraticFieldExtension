@@ -39,25 +39,31 @@ private:
 
 //////////////////////////////////
 
-class QuadraticField;
+// class QuadraticField;
 
 // For quick computation, should only overload *= and += ?
+
+class QuadraticFieldTower;
+
 class FieldElement {
 public:
 	FieldElement();
-	FieldElement(QuadraticField* field_, std::vector<Rational> coords_);
+	FieldElement(QuadraticFieldTower* field, int level, std::vector<Rational> coords_);
 	
 	std::string Print();
 	FieldElement& operator+=(const FieldElement& rhs);
 	FieldElement& operator*=(const FieldElement& rhs);
 
+    FieldElement operator+(const FieldElement& rhs);
+    FieldElement operator*(const FieldElement& rhs);
+
 	std::vector<Rational> coords;
-	QuadraticField* field;
+    QuadraticFieldTower* field;
+    int level;
 
 private:
 
-	FieldElement subfieldelem(int n);
-	void multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs);
+	//void multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs);
 };
 
 //////////////////////////////////
@@ -72,35 +78,38 @@ class QuadraticFieldTower {
 		std::string PrintCoords(std::vector<Rational> & coords);
 		std::complex<double> CoordsToComplex(std::vector<Rational> & coords);
 
+        FieldElement multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level);
+        void multiply(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int length);
+
 	private:
 		int degree, numsquares;
 		std::vector< std::vector<Rational> > squares;
 		std::vector< std::complex<double> > complexroots;
 };
 //////////////////////////////////
-class QuadraticField {
-
-public:
-	QuadraticField();
-	QuadraticField(Rational root);
-	QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_);
-	~QuadraticField();
-
-	int GetDegree(){return degree;}
-	int GetExtensionIndex(){return extensioni;}
-	QuadraticField* GetBaseField() { return basefield;}
-	FieldElement GetRoot();
-	std::string Print();
-
-	static const int numscratch = 3;	
-	std::vector<Rational> Scratch[numscratch];
-	std::vector<Rational> Result;
-
-private:
-	int degree, extensioni;
-	std::vector<Rational> Root;
-	QuadraticField* basefield;
-	std::string name;
-
-	std::string PrintRootList();
-};
+// class QuadraticField {
+// 
+// public:
+// 	QuadraticField();
+// 	QuadraticField(Rational root);
+// 	QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_);
+// 	~QuadraticField();
+// 
+// 	int GetDegree(){return degree;}
+// 	int GetExtensionIndex(){return extensioni;}
+// 	QuadraticField* GetBaseField() { return basefield;}
+// 	FieldElement GetRoot();
+// 	std::string Print();
+// 
+// 	static const int numscratch = 3;	
+// 	std::vector<Rational> Scratch[numscratch];
+// 	std::vector<Rational> Result;
+// 
+// private:
+// 	int degree, extensioni;
+// 	std::vector<Rational> Root;
+// 	QuadraticField* basefield;
+// 	std::string name;
+// 
+// 	std::string PrintRootList();
+// };
