@@ -12,6 +12,8 @@ int main() {
 	std::vector<Rational> root(2, Rational(1,2)), coords(4), coords2(4);
 	std::complex<float> check1, check2;
 
+    // Add in two roots to build tower of fields.
+
 	fieldtower.AddSquare(root);
 
 	for(int i=0; i < 4; i++) {
@@ -20,11 +22,31 @@ int main() {
 	}
 	fieldtower.AddSquare(coords);
 
+    // Check printing functions.
 	
 	std::cout << "Rational q = " << q.print() << std::endl;
 	std::cout << "fieldtower = " << fieldtower.Print() << std::endl;
+    std::cout << "Checking field tower printing of coordinates: " << fieldtower.PrintCoords(coords) << std::endl;
+
+    // Check FieldElement.
+
+    Rational myRationals[] = {Rational(0, 0), Rational(1, 1), Rational(1, 1), Rational(1, 1)},
+             myRationals2[] = {Rational(0, 1), Rational(1, 1), Rational(0, 2), Rational(0, 1)};
+
+    std::vector<Rational> coords3(myRationals, myRationals + sizeof(myRationals) / sizeof(Rational)),
+                          coords4(myRationals2, myRationals2 + sizeof(myRationals2) / sizeof(Rational));
+    FieldElement myElement(&fieldtower, 2, coords3),
+                 myElement2(&fieldtower, 2, coords4);
+
+    std::cout << "myElement = " << myElement.Print() << std::endl
+              << "myElement2 = " << myElement2.Print() << std::endl
+              << "Their product = " << (myElement * myElement2).Print() << std::endl << std::endl;
+
+    // Check the adding function.
+
 	std::cout << "   ( " << fieldtower.PrintCoords(coords) << " )"  << std::endl
 		  << " + ( " << fieldtower.PrintCoords(coords2) << " )" << std::endl;
+
 	fieldtower.Add(coords, coords2);
 	std::cout << " = " << fieldtower.PrintCoords(coords) << std::endl << std::endl;
 

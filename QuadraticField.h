@@ -78,8 +78,8 @@ class QuadraticFieldTower {
 		std::string PrintCoords(std::vector<Rational> & coords);
 		std::complex<double> CoordsToComplex(std::vector<Rational> & coords);
 
-        FieldElement multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level);
-        void multiply(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int length);
+        FieldElement multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs);
+        void multiply(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int length, int level);
 
 	private:
 		int degree, numsquares;
