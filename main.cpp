@@ -26,7 +26,6 @@ int main() {
 	
 	std::cout << "Rational q = " << q.print() << std::endl;
 	std::cout << "fieldtower = " << fieldtower.Print() << std::endl;
-    std::cout << "Checking field tower printing of coordinates: " << fieldtower.PrintCoords(coords) << std::endl;
 
     // Check FieldElement.
 
@@ -40,34 +39,35 @@ int main() {
 
     std::cout << "myElement = " << myElement.Print() << std::endl
               << "myElement2 = " << myElement2.Print() << std::endl
+              << "Their sum = " << (myElement + myElement2).Print() << std::endl
               << "Their product = " << (myElement * myElement2).Print() << std::endl << std::endl;
 
-    // Check the adding function.
+    // // Check the adding function.
 
-	std::cout << "   ( " << fieldtower.PrintCoords(coords) << " )"  << std::endl
-		  << " + ( " << fieldtower.PrintCoords(coords2) << " )" << std::endl;
+	// std::cout << "   ( " << fieldtower.PrintCoords(coords) << " )"  << std::endl
+	// 	  << " + ( " << fieldtower.PrintCoords(coords2) << " )" << std::endl;
 
-	fieldtower.Add(coords, coords2);
-	std::cout << " = " << fieldtower.PrintCoords(coords) << std::endl << std::endl;
+	// fieldtower.Add(coords, coords2);
+	// std::cout << " = " << fieldtower.PrintCoords(coords) << std::endl << std::endl;
 
-	//coords.resize(2);
-	coords[0] = Rational(1,1);
-	coords[1] = Rational(0,1);
-	coords[2] = Rational(0,1);
-	coords[3] = Rational(1,1);	
-	std::cout << "   (" << fieldtower.PrintCoords(coords) << ")" << std::endl
-		  << " * (" << fieldtower.PrintCoords(coords) << ")" << std::endl;
-	check1 = fieldtower.CoordsToComplex(coords);
-	check1 *= check1;
+	// //coords.resize(2);
+	// coords[0] = Rational(1,1);
+	// coords[1] = Rational(0,1);
+	// coords[2] = Rational(0,1);
+	// coords[3] = Rational(1,1);	
+	// std::cout << "   (" << fieldtower.PrintCoords(coords) << ")" << std::endl
+	// 	  << " * (" << fieldtower.PrintCoords(coords) << ")" << std::endl;
+	// check1 = fieldtower.CoordsToComplex(coords);
+	// check1 *= check1;
 
-	fieldtower.Product(coords, coords);
-	std::cout << " =  " << fieldtower.PrintCoords(coords) << std::endl;
-	check2 = fieldtower.CoordsToComplex(coords);
+	// fieldtower.Product(coords, coords);
+	// std::cout << " =  " << fieldtower.PrintCoords(coords) << std::endl;
+	// check2 = fieldtower.CoordsToComplex(coords);
 
-	std::cout << "Numerical double check" << std::endl
-		  << "check1 = " << check1 << std::endl
-		  << "check2 = " << check2 << std::endl;
-	
+	// std::cout << "Numerical double check" << std::endl
+	// 	  << "check1 = " << check1 << std::endl
+	// 	  << "check2 = " << check2 << std::endl;
+
 	return 0;
 
 }

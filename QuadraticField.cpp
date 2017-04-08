@@ -198,26 +198,7 @@ FieldElement FieldElement :: operator * (const FieldElement& rhs) {
     return *this *= rhs;
 }
 
-// FieldElement FieldElement::subfieldelem(int n) {
-// 	return FieldElement(field->GetBaseField(), field->Scratch[n]);
-// }
-
-//// Can probably do this without induction and use bitwise operations. Multiply by one rhs Rational coordinate at a time. Keep track of which roots get squared (bitwise AND) and which do not (bitwise XOR). Then put in right place?
-// void FieldElement::multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs) {
-// 	int mydegree = field->GetDegree();
-// 	std::vector<Rational> scratch = std::vector<Rational>(mydegree/2, Rational(0,1));
-// 
-// 	if(mydegree == 2) {
-// 		scratch[0] = lhs[0]*rhs[0] + lhs[1]*rhs[1] * field->GetRoot().coords[0];
-// 		lhs[1] = lhs[0]*rhs[1] + lhs[1]*rhs[0];
-// 	       	lhs[0] = scratch[0];
-// 	}
-// 	else {
-// 		
-// 	}
-// 
-// }
-//////////////////////////////////////////////
+/////////////////////////////////////////////
 
 QuadraticFieldTower::QuadraticFieldTower(Rational square_) {
 	std::complex<double> newcomplexroot = std::complex<double>(square_.ToFloat(), 0);
@@ -257,97 +238,6 @@ void QuadraticFieldTower::AddSquare(std::vector<Rational> coords) {
 
 }
 
-void QuadraticFieldTower::Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs) {
-	int coordsize;
-
-	// If lhs.size() < rhs.size(), then need to resize lhs.
-	if(lhs.size() < rhs.size())	
-		lhs.resize (rhs.size(), Rational(0,1));
-	coordsize = lhs.size();
-
-	for(int i=0; i < coordsize; i++)
-		lhs[i] = lhs[i] + rhs[i];
-}
-
-void QuadraticFieldTower::Product(std::vector<Rational> & lhs, std::vector<Rational> & rhs) {
-	int coordsize, coordi, newcoordi, whichroot, roottest;
-	std::vector<Rational> scratch, finalanswer;
-	std::vector<int> exponents;
-	
-
-	if(lhs.size() < rhs.size())
-		lhs.resize( rhs.size(), Rational(0,1));
-	coordsize = lhs.size();
-	exponents = std::vector<int>(coordsize, 0);
-	finalanswer = std::vector<Rational>(coordsize, Rational(0,1));
-	scratch = std::vector<Rational>(coordsize, Rational(0,1));
-	
-
-	// nth bit of coordinate index indicates if this coordinate has the nth root
-	
-	for(int i=0; i < coordsize; i++) {
-		for(int j = 0; j < rhs.size(); j++) {
-
-		        // XOR keeps only the roots with one power	
-			scratch[i ^ j] = lhs[i] * rhs[j];
-
-			// use exponents[j] to record for each coordinate, which
-			// roots get squared.
-		
-			// Bitwise AND keeps roots that are squared	
-			exponents[i ^ j] = i & j;	
-		}
-
-		// Now replace ri^2 by their respective Rational coordinates.
-		// Go from low coordinates r1 to high coordinates.
-		
-		coordi = 0;
-		while(coordi < coordsize) {
-
-			// If there are no squared roots then process into final answer
-			
-			if(exponents[coordi] == 0) {
-				finalanswer[coordi] = finalanswer[coordi] + scratch[coordi];
-				scratch[coordi] = Rational(0,1);	
-			}
-
-			// The case that there are squared roots
-			else {
-				whichroot = 0;
-				roottest = 1;
-				while(whichroot < numsquares && (exponents[coordi] & roottest) == 0) {
-					roottest = roottest << 1;
-					whichroot++;
-				}
-				if(whichroot < numsquares) {
-					// Use a bitwise XOR to remove the square from exponents list
-					exponents[coordi] = exponents[coordi] ^ roottest;
-					// Add in coordinates of square with scaling by scratch[coordi]
-					// Note that newcoordi==coordi when j=0. We need to use
-					// scratch[coordi] in loop, so wait to handle this case until
-					// after the loop.
-					for(int j = 1; j < squares[whichroot].size(); j++) {
-						newcoordi = j ^ coordi;
-						scratch[newcoordi] = scratch[coordi] * squares[whichroot][j];
-						exponents[newcoordi] = (j & coordi) | exponents[coordi]; 
-					}
-
-					// Now handle the j=0 case. exponents[coordi] is already correct.	
-					scratch[coordi] = scratch[coordi]*squares[whichroot][0];
-
-					// Set up coordi to start loop from beginning
-					coordi = -1;	
-				}
-
-			}
-			coordi++;
-		}	
-	}
-
-	for(int i = 0; i < coordsize; i++)
-		lhs[i] = finalanswer[i];	
-}
-
 std::string QuadraticFieldTower::Print() {
 	std::ostringstream oss;
 	std::string name = std::string();
@@ -379,41 +269,10 @@ std::string QuadraticFieldTower::PrintRootList() {
 		oss << i+1;
 		name += oss.str();
 		name += " = Sqrt( ";
-		name += PrintCoords(squares[i]);	
+		name += FieldElement(this, i, squares[i]).Print(); //PrintCoords(squares[i]);	
 		name += " )\n";		
 	}
 	return name;
-}
-
-std::string QuadraticFieldTower::PrintCoords(std::vector<Rational> & coords) {
-	std::ostringstream oss;
-	std::string name = std::string();
-	int whichroot, reducedindex; 
-
-	if(coords.size() > degree)
-		return std::string("Coordinate Size Greater Than Degree");
-
-	for(int j=0; j < coords.size(); j++) {
-			name += coords[j].print();
-			if(j > 0)
-		        	name += " ";	
-			reducedindex = j;
-			whichroot = 1;
-			while(reducedindex > 0) {
-				if(reducedindex % 2 != 0) {
-					name += "r";
-					oss.str(std::string());
-				        oss << whichroot;
-					name += oss.str();	
-				}
-				reducedindex /=2;
-				whichroot++;
-			}
-			if(j < coords.size()-1)
-				name += " + ";	
-	}
-
-	return name;	
 }
 
 std::complex<double> QuadraticFieldTower::CoordsToComplex(std::vector<Rational> & coords) {
@@ -485,95 +344,4 @@ void QuadraticFieldTower::multiply (std::vector<Rational>::const_iterator lhsIt,
 }
 //////////////////////////////////////////////
 
-// QuadraticField::QuadraticField() {
-// 	degree = 1;
-// 	Result = std::vector<Rational>(1);
-// 	basefield= NULL;
-// 
-// 	name = std::string();
-// 	Result = std::vector<Rational>(1);
-// 
-// 	for(int i=0; i<numscratch; i++) 
-// 		Scratch[i] = std::vector<Rational>(1);	
-// }
-// 
-// QuadraticField::QuadraticField(Rational root_) {
-// 	degree = 2;
-// 	extensioni = 1;
-// 	Root = std::vector<Rational>(1);
-// 	basefield = NULL;
-// 
-// 	Root[0] = root_;
-// 	name = std::string();
-// 
-// 	Result = std::vector<Rational>(degree);
-// 	for(int i=0; i<numscratch; i++)
-// 		Scratch[i] = std::vector<Rational>(degree);
-// }
-// 
-// QuadraticField::QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_) {
-// 	basefield = basefield_;
-// 	degree = 2*basefield->GetDegree();
-// 	extensioni = 1+basefield->GetExtensionIndex();
-// 	if(basefield->GetDegree() == root_.size())
-// 		Root = root_;
-// 	else
-// 		Root = std::vector<Rational>(basefield->GetDegree());
-// 
-// 	Result = std::vector<Rational>(degree);
-// 	for(int i=0; i<numscratch; i++)
-// 		Scratch[i] = std::vector<Rational>(degree);
-// }
-// 
-// 
-// QuadraticField::~QuadraticField() {
-// 
-// }
-// 
-// FieldElement QuadraticField::GetRoot() {
-// 	return FieldElement(this, Root); 
-// }
-// 
-// std::string QuadraticField::Print() {
-// 	std::ostringstream oss;
-// 	std::string name = std::string();
-// 
-// 	name += "Q( ";
-// 	int idegree = degree, rootnum = 1;
-// 	while (idegree > 1) {	
-// 		name += "r";
-// 		oss.str(std::string());
-// 		oss << rootnum;
-// 		name += oss.str();
-// 		if (idegree > 2)
-// 			name += ", ";
-// 		idegree /= 2;
-// 		rootnum++;
-// 	}
-// 	name += ") where\n";
-// 	name += PrintRootList();	
-// 	return name;	
-// }
-// 
-// std::string QuadraticField::PrintRootList() {
-// 	std::ostringstream oss;
-// 	std::string name = std::string();
-// 	if (degree > 2) {
-// 		name += basefield->PrintRootList();
-// 		FieldElement myroot = FieldElement(basefield, Root);
-// 		oss.str(std::string());
-// 		oss << extensioni;
-// 		name += "r";
-// 		name += oss.str();
-// 		name += " = Sqrt of ";
-// 		name += myroot.Print();
-// 		name += "\n";
-// 	}
-// 	else {
-// 		name += "r1 = Sqrt of ";
-// 		name += Root[0].print();
-// 		name += "\n";	
-// 	}
-// 
-// 	return name;
-// }
+
