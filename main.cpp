@@ -29,45 +29,34 @@ int main() {
 
     // Check FieldElement.
 
-    Rational myRationals[] = {Rational(0, 0), Rational(1, 1), Rational(1, 1), Rational(1, 1)},
-             myRationals2[] = {Rational(0, 1), Rational(1, 1), Rational(0, 2), Rational(0, 1)};
+    Rational myRationals[] = {Rational(1, 2), Rational(2, 3), Rational(3, 4), Rational(4, 5)},
+             myRationals2[] = {Rational(1, 2), Rational(3, 4), Rational(5, 6), Rational(7, 8)};
 
     std::vector<Rational> coords3(myRationals, myRationals + sizeof(myRationals) / sizeof(Rational)),
                           coords4(myRationals2, myRationals2 + sizeof(myRationals2) / sizeof(Rational));
     FieldElement myElement(&fieldtower, 2, coords3),
-                 myElement2(&fieldtower, 2, coords4);
+                 myElement2(&fieldtower, 2, coords4),
+                 mySum = myElement + myElement2,
+                 myProduct = myElement * myElement2;
 
     std::cout << "myElement = " << myElement.Print() << std::endl
               << "myElement2 = " << myElement2.Print() << std::endl
-              << "Their sum = " << (myElement + myElement2).Print() << std::endl
-              << "Their product = " << (myElement * myElement2).Print() << std::endl << std::endl;
+              << "Their sum = " << mySum.Print() << std::endl
+              << "Their product = " << myProduct.Print() << std::endl << std::endl;
 
-    // // Check the adding function.
+    // Double check sums and products using conversion to complex.
 
-	// std::cout << "   ( " << fieldtower.PrintCoords(coords) << " )"  << std::endl
-	// 	  << " + ( " << fieldtower.PrintCoords(coords2) << " )" << std::endl;
+    std::complex<double> myComplex = fieldtower.toComplex(myElement),
+                         myComplex2 = fieldtower.toComplex(myElement2);
 
-	// fieldtower.Add(coords, coords2);
-	// std::cout << " = " << fieldtower.PrintCoords(coords) << std::endl << std::endl;
-
-	// //coords.resize(2);
-	// coords[0] = Rational(1,1);
-	// coords[1] = Rational(0,1);
-	// coords[2] = Rational(0,1);
-	// coords[3] = Rational(1,1);	
-	// std::cout << "   (" << fieldtower.PrintCoords(coords) << ")" << std::endl
-	// 	  << " * (" << fieldtower.PrintCoords(coords) << ")" << std::endl;
-	// check1 = fieldtower.CoordsToComplex(coords);
-	// check1 *= check1;
-
-	// fieldtower.Product(coords, coords);
-	// std::cout << " =  " << fieldtower.PrintCoords(coords) << std::endl;
-	// check2 = fieldtower.CoordsToComplex(coords);
-
-	// std::cout << "Numerical double check" << std::endl
-	// 	  << "check1 = " << check1 << std::endl
-	// 	  << "check2 = " << check2 << std::endl;
-
-	return 0;
+    std::cout << "Double check of sums and products using complex number conversion." << std::endl
+              << "As a complex number, myElement = " << myComplex << std::endl
+              << "As a complex number, myElement2 = " << myComplex2 << std::endl
+              << "Sum of complex = " << myComplex + myComplex2 << std::endl
+              << "Complex conversion of sum = " << fieldtower.toComplex(mySum) << std::endl
+              << "Product of complex = " << myComplex * myComplex2 << std::endl
+              << "Complex conversion of product = " << fieldtower.toComplex(myProduct) << std::endl;
+                 
+    return 0;
 
 }

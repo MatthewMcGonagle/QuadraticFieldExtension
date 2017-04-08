@@ -184,7 +184,7 @@ FieldElement& FieldElement :: operator += (const FieldElement& rhs) {
 }
 
 FieldElement& FieldElement :: operator *= (const FieldElement& rhs) {
-	field -> multiply(coords, rhs.coords);
+	field -> multiply(coords, rhs.coords, level);
 }
 
 FieldElement FieldElement :: operator + (const FieldElement& rhs) {
@@ -275,7 +275,7 @@ std::string QuadraticFieldTower::PrintRootList() {
 	return name;
 }
 
-std::complex<double> QuadraticFieldTower::CoordsToComplex(std::vector<Rational> & coords) {
+std::complex<double> QuadraticFieldTower::toComplex(std::vector<Rational> & coords) {
 	std::complex<double> result(0.0,0.0), temp;
 	int whichroot, mask;
 	
@@ -296,10 +296,15 @@ std::complex<double> QuadraticFieldTower::CoordsToComplex(std::vector<Rational> 
 	return result;
 }
 
-FieldElement QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs) {
+std::complex<double> QuadraticFieldTower::toComplex(FieldElement &x) {
+    return toComplex(x.coords);
+}
+
+
+FieldElement QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level) {
     std::vector<Rational> scratch (lhs.size());
 
-    multiply(lhs.begin(), rhs.begin(), scratch.begin(), lhs.size(), numsquares); 
+    multiply(lhs.begin(), rhs.begin(), scratch.begin(), lhs.size(), level); 
     return FieldElement(this, numsquares, scratch);
 }
 
