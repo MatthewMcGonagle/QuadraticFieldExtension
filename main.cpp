@@ -36,12 +36,16 @@ int main() {
                           coords4(myRationals2, myRationals2 + sizeof(myRationals2) / sizeof(Rational));
     FieldElement myElement(&fieldtower, 2, coords3),
                  myElement2(&fieldtower, 2, coords4),
-                 mySum = myElement + myElement2,
-                 myProduct = myElement * myElement2;
+                 mySum, 
+                 myProduct; 
 
     std::cout << "myElement = " << myElement.Print() << std::endl
-              << "myElement2 = " << myElement2.Print() << std::endl
-              << "Their sum = " << mySum.Print() << std::endl
+              << "myElement2 = " << myElement2.Print() << std::endl;
+
+    mySum = myElement + myElement2;
+    myProduct = myElement * myElement2;
+
+    std::cout << "Their sum = " << mySum.Print() << std::endl
               << "Their product = " << myProduct.Print() << std::endl << std::endl;
 
     // Double check sums and products using conversion to complex.

@@ -134,7 +134,7 @@ double Rational::ToFloat() {
 
 //////////////////////////////////////////////
 
-Coordinates& Coordinates::operator+=(const Coordinates& rhs) {
+Coordinates& Coordinates::operator += (const Coordinates& rhs) {
     std::vector<Rational>::iterator iIt;
     std::vector<Rational>::const_iterator jIt;
 
@@ -147,6 +147,12 @@ Coordinates& Coordinates::operator+=(const Coordinates& rhs) {
     return *this;
          
 }
+
+Coordinates Coordinates::operator + (const Coordinates& rhs) {
+    Coordinates result(coordinates);
+    result += rhs;
+    return result;
+} 
 
 Coordinates& Coordinates::operator -= (const Coordinates& rhs) {
     std::vector<Rational>::iterator iIt;
@@ -161,7 +167,15 @@ Coordinates& Coordinates::operator -= (const Coordinates& rhs) {
     return *this;
 
 } 
+
+Coordinates Coordinates::operator - (const Coordinates& rhs) {
+    Coordinates result(coordinates);
+    result -= rhs;
+    return result;
+}
+
 /////////////////////////////////////////////
+
 FieldElement::FieldElement() {
     level = -1;
     field = NULL;
@@ -226,7 +240,8 @@ FieldElement& FieldElement :: operator -= (const FieldElement& rhs) {
 }
 
 FieldElement& FieldElement :: operator *= (const FieldElement& rhs) {
-	field -> multiply(coords, rhs.coords, level);
+	coords = field -> multiply(coords, rhs.coords, level, rhs.level);
+    return *this;
 }
 
 FieldElement FieldElement :: operator + (const FieldElement& rhs) {
@@ -244,7 +259,8 @@ FieldElement FieldElement :: operator - (const FieldElement &rhs) {
 }
 
 FieldElement FieldElement :: operator * (const FieldElement& rhs) {
-    return *this *= rhs;
+    FieldElement solution = *this;
+    return solution *= rhs;
 }
 
 /////////////////////////////////////////////
@@ -359,50 +375,107 @@ bool QuadraticFieldTower::sqrtExists(std::vector<Rational> &coords) {
     return true;
 }
 
-FieldElement QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level) {
-    std::vector<Rational> scratch (lhs.size());
+std::vector<Rational> QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel) {
 
-    multiply(lhs.begin(), rhs.begin(), scratch.begin(), lhs.size(), level); 
-    return FieldElement(this, numsquares, scratch);
+    std::vector<Rational> solution;
+    std::vector<Rational>::const_iterator lhsIt, rhsIt;
+    int newLhsSize, newRhsSize, level;
+
+    if (lhs.size() > rhs.size()) {
+        lhsIt = lhs.begin();
+        rhsIt = rhs.begin();
+        level = lhsLevel;
+        newLhsSize = lhs.size();
+        newRhsSize = rhs.size();
+    }
+    else {
+        lhsIt = rhs.begin();
+        rhsIt = lhs.begin();
+        level = rhsLevel;
+        newLhsSize = rhs.size();
+        newRhsSize = lhs.size();
+    }
+
+    solution = std::vector<Rational> (lhs.size()); 
+
+    multiplyLhsLargest(lhs.begin(), rhs.begin(), solution.begin(), newLhsSize, newRhsSize, level);
+
+    return solution;
+ 
 }
 
-void QuadraticFieldTower::multiply (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, int length, int level) {
-    std::vector<Rational> scratch (length);
-    std::vector<Rational>::const_iterator lhsMiddleIt = lhsIt + length / 2,
-                                          rhsMiddleIt = rhsIt + length / 2;
-    std::vector<Rational>::iterator solMiddleIt = solutionIt + length / 2,
-                                    scratchMiddleIt = scratch.begin() + length / 2;
-    int sublength = length / 2, sublevel = level - 1;
+void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, int lhsLength, int rhsLength, int lhsLevel) {
+    std::vector<Rational> scratch (lhsLength);
+    int sublength = lhsLength / 2, sublevel = lhsLevel - 1;
+    std::vector<Rational>::const_iterator lhsMiddleIt = lhsIt + lhsLength / 2, 
+                                          rhsMiddleIt = rhsIt + rhsLength / 2; 
+    std::vector<Rational>::iterator solMiddleIt = solutionIt + lhsLength / 2, 
+                                    scratchMiddleIt = scratch.begin() + lhsLength / 2; 
 
-    if (length < 2) {
+    if (lhsLength < 2) {
         *solutionIt = *lhsIt * *rhsIt;
         return;
     }
    
-    // First handle multiplication of cross terms. No need to use root here. 
- 
-    multiply(lhsIt, rhsMiddleIt, scratch.begin(), sublength, sublevel);
-    multiply(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, sublevel);
-     
-    for(std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solMiddleIt;
-        iIt < scratchMiddleIt; 
-        iIt++, jIt++, solIt++) {
+    if( lhsLength > rhsLength) {
 
-        *solIt = *iIt + *jIt;
+        // First handle multiplication of cross terms. No need to use root here. 
+
+        multiplyLhsLargest(lhsMiddleIt, rhsIt, scratch.begin(), sublength, rhsLength, sublevel);
+
+        // Now handle the non-cross terms.
+
+        multiplyLhsLargest(lhsIt, rhsIt, scratchMiddleIt, sublength, rhsLength, sublevel); 
+
+        for( std::vector<Rational>::iterator iIt = scratch.begin(), solIt = solutionIt 
+           ; iIt != scratch.end() 
+           ; iIt++, solIt++
+           ) 
+           
+           *solIt = *iIt;
+
     }
-    
-    // Now do non-cross terms. Need to use the root here.
 
-    multiply(lhsMiddleIt, rhsMiddleIt, scratch.begin(), sublength, sublevel);
-    multiply(scratch.begin(), squares[level-1].begin(), scratchMiddleIt, sublength, sublevel); 
-    multiply(lhsIt, rhsIt, scratch.begin(), sublength, sublevel);
+    else { 
 
-    for(std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solutionIt;
-        iIt < scratchMiddleIt;
-        iIt++, jIt++, solIt++) {
+        // First handle multiplication of cross terms. No need to use root here. 
+
+        multiplyLhsLargest(lhsIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
+        multiplyLhsLargest(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, sublength, sublevel);
+
+        for( std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solMiddleIt
+           ; iIt < scratchMiddleIt 
+           ; iIt++, jIt++, solIt++
+           ) 
+
+            *solIt = *iIt + *jIt;
         
-        *solIt = *iIt + *jIt;
-    }
+        // Now do non-cross terms. Need to use the root here.
+
+        multiplyLhsLargest(lhsMiddleIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
+        multiplyLhsLargest(scratch.begin(), squares[lhsLevel-1].begin(), scratchMiddleIt, sublength, sublength, sublevel); 
+        multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, sublength, sublevel);
+
+        for( std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solutionIt
+           ; iIt < scratchMiddleIt
+           ; iIt++, jIt++, solIt++) 
+            
+            *solIt = *iIt + *jIt;
+
+        }
+         
+        // Now do non-cross terms. Need to use the root here.
+
+        multiplyLhsLargest(lhsMiddleIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
+        multiplyLhsLargest(scratch.begin(), squares[lhsLevel-1].begin(), scratchMiddleIt, sublength, sublength, sublevel); 
+        multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, sublength, sublevel);
+
+        for(std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solutionIt;
+            iIt < scratchMiddleIt;
+            iIt++, jIt++, solIt++) {
+            
+            *solIt = *iIt + *jIt;
+        }
     
 }
 

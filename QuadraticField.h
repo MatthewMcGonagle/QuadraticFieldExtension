@@ -45,7 +45,17 @@ class Coordinates {
         Coordinates(std::vector<Rational> coord){ coordinates = coord;};
 
         Coordinates& operator+=(const Coordinates& rhs);
+        Coordinates operator+(const Coordinates& rhs);
         Coordinates& operator-=(const Coordinates& rhs);
+        Coordinates operator-(const Coordinates& rhs);
+
+        std::vector<Rational>::iterator begin() {return coordinates.begin(); };
+        std::vector<Rational>::const_iterator begin() const {return coordinates.begin();};
+        std::vector<Rational>::iterator end() {return coordinates.end(); }
+        std::vector<Rational>::const_iterator end() const {return coordinates.end();};
+        std::vector<Rational>::iterator middle() {return coordinates.begin() + size() / 2;};
+        std::vector<Rational>::const_iterator middle() const {coordinates.begin() + size() / 2;};
+        int size() const {return coordinates.size();};
 
         std::vector<Rational> coordinates;        
 
@@ -92,7 +102,7 @@ class QuadraticFieldTower {
         std::complex<double> toComplex(FieldElement &x);
 
         bool sqrtExists(std::vector<Rational> &coords);
-        FieldElement multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level);
+        std::vector<Rational> multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel);
 
 	private:
         bool sqrtExistsResult;
@@ -100,7 +110,7 @@ class QuadraticFieldTower {
         std::vector<Rational> sqrtResult;
 		std::vector< std::vector<Rational> > squares;
 		std::vector< std::complex<double> > complexroots;
-        void multiply(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int length, int level);
+        void multiplyLhsLargest(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int lhsLength, int rhsLength, int lhsLevel);
         std::vector<Rational> getSqrt(std::vector<Rational> coords, int level);
 
 };
