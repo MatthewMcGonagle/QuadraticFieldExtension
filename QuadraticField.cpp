@@ -71,7 +71,7 @@ const Rational Rational::operator*(const Rational &r) const {
 	return Rational(a*p, b*q);
 }
 
-const Rational Rational::operator+(const Rational &r) const {
+Rational Rational::operator+(const Rational &r) const {
 	// Do division first to reduce chance of integer overflow errors.
 	int lcm, pnew;
 	lcm = r.GetQ()/gcd(this->den, r.GetQ());
@@ -133,6 +133,35 @@ double Rational::ToFloat() {
 }
 
 //////////////////////////////////////////////
+
+Coordinates& Coordinates::operator+=(const Coordinates& rhs) {
+    std::vector<Rational>::iterator iIt;
+    std::vector<Rational>::const_iterator jIt;
+
+    for( iIt = coordinates.begin(), jIt = rhs.coordinates.begin()
+       ; iIt < coordinates.end() && jIt < rhs.coordinates.end()
+       ; iIt++, jIt++)
+        
+        *iIt = *iIt + *jIt; 
+
+    return *this;
+         
+}
+
+Coordinates& Coordinates::operator -= (const Coordinates& rhs) {
+    std::vector<Rational>::iterator iIt;
+    std::vector<Rational>::const_iterator jIt;
+
+    for( iIt = coordinates.begin(), jIt = rhs.coordinates.begin()
+       ; iIt < coordinates.end() && jIt < rhs.coordinates.end()
+       ; iIt++, jIt++)
+        
+        *iIt = *iIt - *jIt; 
+
+    return *this;
+
+} 
+/////////////////////////////////////////////
 FieldElement::FieldElement() {
     level = -1;
     field = NULL;
@@ -183,6 +212,19 @@ FieldElement& FieldElement :: operator += (const FieldElement& rhs) {
 	return *this;
 }
 
+FieldElement& FieldElement :: operator -= (const FieldElement& rhs) {
+
+	int maxindex = coords.size(); 
+
+	if(rhs.coords.size() < maxindex)
+		maxindex = rhs.coords.size();
+
+	for(int i = 0; i < maxindex; i++) 
+		coords[i] = coords[i] - rhs.coords[i];	
+
+	return *this;
+}
+
 FieldElement& FieldElement :: operator *= (const FieldElement& rhs) {
 	field -> multiply(coords, rhs.coords, level);
 }
@@ -192,6 +234,13 @@ FieldElement FieldElement :: operator + (const FieldElement& rhs) {
     FieldElement resultField(field, level, result);
 
     return resultField += rhs; 
+}
+
+FieldElement FieldElement :: operator - (const FieldElement &rhs) {
+    std::vector<Rational> result = coords;
+    FieldElement resultField(field, level, result);
+
+    return resultField -= rhs;
 }
 
 FieldElement FieldElement :: operator * (const FieldElement& rhs) {
@@ -300,6 +349,15 @@ std::complex<double> QuadraticFieldTower::toComplex(FieldElement &x) {
     return toComplex(x.coords);
 }
 
+bool QuadraticFieldTower::sqrtExists(std::vector<Rational> &coords) {
+    if (coords.size() < 2) {
+       sqrtExistsResult = coords[0].FindSqrt(); 
+       sqrtResult[0] = coords[0].GetSqrt(); 
+       return sqrtExistsResult;
+    }
+
+    return true;
+}
 
 FieldElement QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level) {
     std::vector<Rational> scratch (lhs.size());
@@ -346,6 +404,40 @@ void QuadraticFieldTower::multiply (std::vector<Rational>::const_iterator lhsIt,
         *solIt = *iIt + *jIt;
     }
     
+}
+
+std::vector<Rational> QuadraticFieldTower::getSqrt(std::vector<Rational> coords, int level) {
+
+    FieldElement a, b; // Think of coordinates as a + r * b where a and b are in the sub-field. 
+    std::vector<Rational> subSqrt, subSqrt2;
+    int middleoffset;
+
+    if (level < 1) {
+       sqrtExistsResult = coords[0].FindSqrt(); 
+       if(sqrtExistsResult)
+           return std::vector<Rational> (1, coords[0].GetSqrt()); 
+       else
+           return std::vector<Rational> (0);
+    }
+
+    middleoffset = coords.size() / 2;
+    a = FieldElement( this
+                    , level - 1
+                    , std::vector<Rational>(coords.begin(), coords.begin() + middleoffset
+                    ));    
+    b = FieldElement( this
+                    , level - 1
+                    , std::vector<Rational>(coords.begin() + middleoffset, coords.begin()
+                    ));
+
+   subSqrt = getSqrt( (a * a - b * b).coords, level - 1); 
+   if(!sqrtExistsResult)
+        return std::vector<Rational>(0);
+
+   subSqrt2 = getSqrt( (a + FieldElement(this, level - 1, subSqrt)).coords
+                     , level - 1); 
+
+   return subSqrt2;
 }
 //////////////////////////////////////////////
 

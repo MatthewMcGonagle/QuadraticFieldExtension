@@ -14,7 +14,7 @@ public:
 	int GetQ() const {return den;};
 	std::string print();
 	const Rational operator*(const Rational &other) const;
-	const Rational operator+(const Rational &other) const;
+	Rational operator+(const Rational &other) const;
 	const Rational operator-(const Rational &other) const;
 
 	Rational Inverse();
@@ -36,6 +36,20 @@ private:
 	std::string name;
 };
 
+/////////////////////////////////
+
+class Coordinates {
+
+    public:
+        Coordinates() {coordinates = std::vector<Rational>(0);};
+        Coordinates(std::vector<Rational> coord){ coordinates = coord;};
+
+        Coordinates& operator+=(const Coordinates& rhs);
+        Coordinates& operator-=(const Coordinates& rhs);
+
+        std::vector<Rational> coordinates;        
+
+}; 
 
 //////////////////////////////////
 
@@ -52,9 +66,11 @@ public:
 	
 	std::string Print();
 	FieldElement& operator+=(const FieldElement& rhs);
+    FieldElement& operator-=(const FieldElement& rhs);
 	FieldElement& operator*=(const FieldElement& rhs);
 
     FieldElement operator+(const FieldElement& rhs);
+    FieldElement operator-(const FieldElement& rhs);
     FieldElement operator*(const FieldElement& rhs);
 
 	std::vector<Rational> coords;
@@ -75,13 +91,17 @@ class QuadraticFieldTower {
 		std::complex<double> toComplex(std::vector<Rational> & coords);
         std::complex<double> toComplex(FieldElement &x);
 
+        bool sqrtExists(std::vector<Rational> &coords);
         FieldElement multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int level);
 
 	private:
+        bool sqrtExistsResult;
 		int degree, numsquares;
+        std::vector<Rational> sqrtResult;
 		std::vector< std::vector<Rational> > squares;
 		std::vector< std::complex<double> > complexroots;
         void multiply(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int length, int level);
+        std::vector<Rational> getSqrt(std::vector<Rational> coords, int level);
 
 };
 
