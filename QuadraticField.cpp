@@ -92,24 +92,43 @@ Rational Rational::operator*(const Rational &rhs) const {
     return result *= rhs; 
 }
 
-Rational Rational::operator+(const Rational &r) const {
-	// Do division first to reduce chance of integer overflow errors.
+Rational& Rational::operator += (const Rational &rhs) {
+    // Do division first to reduce chance of integer overflow errors.
 	int lcm, pnew;
-	lcm = r.GetQ()/gcd(this->den, r.GetQ());
+	lcm = rhs.GetQ()/gcd(this->den, rhs.GetQ());
 	lcm *= this->den;
 	pnew = this->num*(lcm/this->den);
-	pnew += r.GetP()*(lcm/r.GetQ());
-	return Rational(pnew, lcm);
+	pnew += rhs.GetP()*(lcm/rhs.GetQ());
+
+    num = pnew;
+    den = lcm;
+    return *this;
 }
 
-Rational Rational::operator-(const Rational &r) const {
+Rational Rational::operator+(const Rational &rhs) const {
+    Rational result = *this;
+    return result += rhs;
+}
+
+Rational& Rational::operator-=(const Rational &rhs) {
 	// Do division first to reduce chance of integer overflow errors.
 	int lcm, pnew;
-	lcm = r.GetQ()/gcd(this->den, r.GetQ());
+	lcm = rhs.GetQ()/gcd(this->den, rhs.GetQ());
 	lcm *= this->den;
 	pnew = this->num*(lcm/this->den);
-	pnew -= r.GetP()*(lcm/r.GetQ());
-	return Rational(pnew, lcm);
+	pnew -= rhs.GetP()*(lcm/rhs.GetQ());
+
+    num = pnew;
+    den = lcm;
+
+	return *this; 
+
+}
+
+Rational Rational::operator-(const Rational &rhs) const {
+    Rational result = *this;
+    return result -= rhs;
+
 }
 
 Rational Rational::Inverse() {
@@ -152,6 +171,65 @@ double Rational::ToFloat() {
         result /= den;
 	return result;	
 }
+
+//////////////////////////////////////////////
+
+CoordinatesRange::CoordinatesRange( std::vector<Rational>::iterator beginIt_
+                            , std::vector<Rational>::iterator endIt_
+                            , int length_ 
+                            ) {
+    beginIt = beginIt_;
+    endIt = endIt_;
+    length = length_;
+}
+
+
+CoordinatesRange& CoordinatesRange::operator += ( const CoordinatesRange& rhs) {
+    std::vector<Rational>::iterator iIt, jIt;
+
+    for ( iIt = beginIt, jIt = rhs.beginIt
+        ; iIt != endIt && jIt != rhs.endIt
+        ; iIt++, jIt++
+        )
+        
+        *iIt += *jIt; 
+
+    return *this;
+
+}
+
+std::vector<Rational> CoordinatesRange::operator + (const CoordinatesRange& rhs) const {
+    std::vector<Rational> result(beginIt, endIt);
+    CoordinatesRange resultRange(result.begin(), result.end(), result.size());
+
+    resultRange += rhs;
+    return result;
+
+}
+
+CoordinatesRange& CoordinatesRange::operator -= ( const CoordinatesRange& rhs) {
+    std::vector<Rational>::iterator iIt, jIt;
+
+    for ( iIt = beginIt, jIt = rhs.beginIt
+        ; iIt != endIt && jIt != rhs.endIt
+        ; iIt++, jIt++
+        )
+        
+        *iIt -= *jIt; 
+
+    return *this;
+
+}
+
+std::vector<Rational> CoordinatesRange::operator - (const CoordinatesRange& rhs) const {
+    std::vector<Rational> result(beginIt, endIt);
+    CoordinatesRange resultRange(result.begin(), result.end(), result.size());
+
+    resultRange -= rhs;
+    return result;
+
+}
+
 
 //////////////////////////////////////////////
 

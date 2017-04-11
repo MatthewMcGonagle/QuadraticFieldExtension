@@ -15,7 +15,9 @@ public:
 	std::string print();
     Rational& operator *= (const Rational& rhs);
 	Rational operator*(const Rational &other) const;
+    Rational& operator+=(const Rational &rhs);
 	Rational operator+(const Rational &other) const;
+    Rational& operator-=(const Rational &rhs);
 	Rational operator-(const Rational &other) const;
 
 	Rational Inverse();
@@ -38,6 +40,25 @@ private:
 };
 
 /////////////////////////////////
+
+class CoordinatesRange {
+    public:
+    CoordinatesRange(){length = 0;};
+    CoordinatesRange( std::vector<Rational>::iterator beginIt_
+                    , std::vector<Rational>::iterator endIt_
+                    , int length_);
+
+    CoordinatesRange& operator += (const CoordinatesRange& rhs);
+    std::vector<Rational> operator + (const CoordinatesRange& rhs) const;
+    CoordinatesRange& operator -= (const CoordinatesRange& rhs);
+    std::vector<Rational> operator - (const CoordinatesRange& rhs) const;
+
+
+    std::vector<Rational>::iterator beginIt, endIt;
+    int length;
+};
+
+////////////////////////////////
 
 class Coordinates {
 
