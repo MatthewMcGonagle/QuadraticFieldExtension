@@ -375,36 +375,43 @@ bool QuadraticFieldTower::sqrtExists(std::vector<Rational> &coords) {
     return true;
 }
 
-std::vector<Rational> QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel) {
+void QuadraticFieldTower::multiplyInPlace(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel, std::vector<Rational>& solution) {
 
-    std::vector<Rational> solution;
     std::vector<Rational>::const_iterator lhsIt, rhsIt;
-    int newLhsSize, newRhsSize, level;
+    int newLhsSize, newRhsSize, newLhsLevel;
 
     if (lhs.size() > rhs.size()) {
         lhsIt = lhs.begin();
         rhsIt = rhs.begin();
-        level = lhsLevel;
+        newLhsLevel = lhsLevel;
         newLhsSize = lhs.size();
         newRhsSize = rhs.size();
     }
     else {
         lhsIt = rhs.begin();
         rhsIt = lhs.begin();
-        level = rhsLevel;
+        newLhsLevel = rhsLevel;
         newLhsSize = rhs.size();
         newRhsSize = lhs.size();
     }
 
-    solution = std::vector<Rational> (lhs.size()); 
+    solution = std::vector<Rational> (newLhsSize); 
 
-    multiplyLhsLargest(lhs.begin(), rhs.begin(), solution.begin(), newLhsSize, newRhsSize, level);
+    multiplyLhsLargest(lhsIt, rhsIt, solution.begin(), newLhsSize, newRhsSize, newLhsLevel);
 
+}
+
+std::vector<Rational> QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel) {
+
+    std::vector<Rational> solution;
+
+    multiplyInPlace(lhs, rhs, lhsLevel, rhsLevel, solution); 
     return solution;
  
 }
 
 void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, int lhsLength, int rhsLength, int lhsLevel) {
+
     std::vector<Rational> scratch (lhsLength);
     int sublength = lhsLength / 2, sublevel = lhsLevel - 1;
     std::vector<Rational>::const_iterator lhsMiddleIt = lhsIt + lhsLength / 2, 
@@ -417,15 +424,15 @@ void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_itera
         return;
     }
    
-    if( lhsLength > rhsLength) {
+    else if( lhsLength > rhsLength) {
 
         // First handle multiplication of cross terms. No need to use root here. 
 
-        multiplyLhsLargest(lhsMiddleIt, rhsIt, scratch.begin(), sublength, rhsLength, sublevel);
+        multiplyLhsLargest(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, rhsLength, sublevel);
 
         // Now handle the non-cross terms.
 
-        multiplyLhsLargest(lhsIt, rhsIt, scratchMiddleIt, sublength, rhsLength, sublevel); 
+        multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, rhsLength, sublevel); 
 
         for( std::vector<Rational>::iterator iIt = scratch.begin(), solIt = solutionIt 
            ; iIt != scratch.end() 
@@ -462,21 +469,8 @@ void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_itera
             
             *solIt = *iIt + *jIt;
 
-        }
+    }
          
-        // Now do non-cross terms. Need to use the root here.
-
-        multiplyLhsLargest(lhsMiddleIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
-        multiplyLhsLargest(scratch.begin(), squares[lhsLevel-1].begin(), scratchMiddleIt, sublength, sublength, sublevel); 
-        multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, sublength, sublevel);
-
-        for(std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solutionIt;
-            iIt < scratchMiddleIt;
-            iIt++, jIt++, solIt++) {
-            
-            *solIt = *iIt + *jIt;
-        }
-    
 }
 
 std::vector<Rational> QuadraticFieldTower::getSqrt(std::vector<Rational> coords, int level) {

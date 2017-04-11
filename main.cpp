@@ -29,12 +29,13 @@ int main() {
 
     // Check FieldElement.
 
-    Rational myRationals[] = {Rational(1, 2), Rational(2, 3), Rational(3, 4), Rational(4, 5)},
+    Rational myRationals[] = {Rational(1, 2), Rational(2, 3), Rational(3, 4), Rational(4, 5)
+                             ,Rational(5, 6), Rational(6, 7), Rational(7, 8), Rational(8, 9)},
              myRationals2[] = {Rational(1, 2), Rational(3, 4), Rational(5, 6), Rational(7, 8)};
 
     std::vector<Rational> coords3(myRationals, myRationals + sizeof(myRationals) / sizeof(Rational)),
                           coords4(myRationals2, myRationals2 + sizeof(myRationals2) / sizeof(Rational));
-    FieldElement myElement(&fieldtower, 2, coords3),
+    FieldElement myElement(&fieldtower, 3, coords3),
                  myElement2(&fieldtower, 2, coords4),
                  mySum, 
                  myProduct; 
@@ -43,7 +44,7 @@ int main() {
               << "myElement2 = " << myElement2.Print() << std::endl;
 
     mySum = myElement + myElement2;
-    myProduct = myElement * myElement2;
+    myProduct = myElement2 * myElement;
 
     std::cout << "Their sum = " << mySum.Print() << std::endl
               << "Their product = " << myProduct.Print() << std::endl << std::endl;

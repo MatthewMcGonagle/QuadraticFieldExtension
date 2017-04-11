@@ -102,6 +102,7 @@ class QuadraticFieldTower {
         std::complex<double> toComplex(FieldElement &x);
 
         bool sqrtExists(std::vector<Rational> &coords);
+        void multiplyInPlace(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel, std::vector<Rational>& solution);
         std::vector<Rational> multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel);
 
 	private:
