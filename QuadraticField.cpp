@@ -56,11 +56,11 @@ std::string Rational::print() {
 	return name;
 }
 
-const Rational Rational::operator*(const Rational &r) const {
+Rational& Rational::operator *= (const Rational& rhs) {
 	// First remove common divisors of opposing numerators and denominators! Reduce the chance of overflow error.
 	// Multiplication is (a/b) * (p/q)
 	
-	int a=this->num, b=this->den, p=r.GetP(), q=r.GetQ(), g;
+	int a=this->num, b=this->den, p=rhs.GetP(), q=rhs.GetQ(), g;
 	g = gcd(a,q);
 	a/=g;
 	q/=g;
@@ -68,7 +68,28 @@ const Rational Rational::operator*(const Rational &r) const {
 	g = gcd(b, p);
 	b/=g;
 	p/=g;
-	return Rational(a*p, b*q);
+
+    num = a * p;
+    den = b * q;
+
+    return *this;
+}
+
+Rational Rational::operator*(const Rational &rhs) const {
+	// First remove common divisors of opposing numerators and denominators! Reduce the chance of overflow error.
+	// Multiplication is (a/b) * (p/q)
+	
+// 	int a=this->num, b=this->den, p=r.GetP(), q=r.GetQ(), g;
+// 	g = gcd(a,q);
+// 	a/=g;
+// 	q/=g;
+// 
+// 	g = gcd(b, p);
+// 	b/=g;
+// 	p/=g;
+// 	return Rational(a*p, b*q);
+    Rational result = *this;
+    return result *= rhs; 
 }
 
 Rational Rational::operator+(const Rational &r) const {
@@ -81,7 +102,7 @@ Rational Rational::operator+(const Rational &r) const {
 	return Rational(pnew, lcm);
 }
 
-const Rational Rational::operator-(const Rational &r) const {
+Rational Rational::operator-(const Rational &r) const {
 	// Do division first to reduce chance of integer overflow errors.
 	int lcm, pnew;
 	lcm = r.GetQ()/gcd(this->den, r.GetQ());
@@ -148,7 +169,7 @@ Coordinates& Coordinates::operator += (const Coordinates& rhs) {
          
 }
 
-Coordinates Coordinates::operator + (const Coordinates& rhs) {
+Coordinates Coordinates::operator + (const Coordinates& rhs) const {
     Coordinates result(coordinates);
     result += rhs;
     return result;
@@ -168,12 +189,25 @@ Coordinates& Coordinates::operator -= (const Coordinates& rhs) {
 
 } 
 
-Coordinates Coordinates::operator - (const Coordinates& rhs) {
-    Coordinates result(coordinates);
+Coordinates Coordinates::operator - (const Coordinates& rhs) const {
+    Coordinates result = *this;
     result -= rhs;
     return result;
 }
 
+Coordinates& Coordinates::operator *= (const Rational& scaling) {
+    for ( std::vector<Rational>::iterator iIt = coordinates.begin()
+        ; iIt != coordinates.end()
+        ; iIt++)
+        *iIt *= scaling; 
+
+    return *this;
+}
+
+Coordinates Coordinates::operator * (const Rational& scaling) const {
+   Coordinates result = *this;
+   return result; 
+}
 /////////////////////////////////////////////
 
 FieldElement::FieldElement() {

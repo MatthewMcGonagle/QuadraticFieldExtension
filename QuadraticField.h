@@ -13,9 +13,10 @@ public:
 	int GetP() const {return num;};
 	int GetQ() const {return den;};
 	std::string print();
-	const Rational operator*(const Rational &other) const;
+    Rational& operator *= (const Rational& rhs);
+	Rational operator*(const Rational &other) const;
 	Rational operator+(const Rational &other) const;
-	const Rational operator-(const Rational &other) const;
+	Rational operator-(const Rational &other) const;
 
 	Rational Inverse();
 
@@ -45,9 +46,11 @@ class Coordinates {
         Coordinates(std::vector<Rational> coord){ coordinates = coord;};
 
         Coordinates& operator+=(const Coordinates& rhs);
-        Coordinates operator+(const Coordinates& rhs);
+        Coordinates operator+(const Coordinates& rhs) const;
         Coordinates& operator-=(const Coordinates& rhs);
-        Coordinates operator-(const Coordinates& rhs);
+        Coordinates operator-(const Coordinates& rhs) const;
+        Coordinates& operator*=(const Rational& scaling);
+        Coordinates operator*(const Rational& scaling) const;
 
         std::vector<Rational>::iterator begin() {return coordinates.begin(); };
         std::vector<Rational>::const_iterator begin() const {return coordinates.begin();};
@@ -63,13 +66,12 @@ class Coordinates {
 
 //////////////////////////////////
 
-// class QuadraticField;
-
 // For quick computation, should only overload *= and += ?
 
 class QuadraticFieldTower;
 
 class FieldElement {
+
 public:
 	FieldElement();
 	FieldElement(QuadraticFieldTower* field, int level, std::vector<Rational> coords_);
@@ -102,8 +104,10 @@ class QuadraticFieldTower {
         std::complex<double> toComplex(FieldElement &x);
 
         bool sqrtExists(std::vector<Rational> &coords);
-        void multiplyInPlace(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel, std::vector<Rational>& solution);
-        std::vector<Rational> multiply(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel);
+        void multiplyInPlace( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
+                            , int lhsLevel, int rhsLevel, std::vector<Rational>& solution);
+        std::vector<Rational> multiply( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
+                                      , int lhsLevel, int rhsLevel);
 
 	private:
         bool sqrtExistsResult;
@@ -111,6 +115,7 @@ class QuadraticFieldTower {
         std::vector<Rational> sqrtResult;
 		std::vector< std::vector<Rational> > squares;
 		std::vector< std::complex<double> > complexroots;
+
         void multiplyLhsLargest(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int lhsLength, int rhsLength, int lhsLevel);
         std::vector<Rational> getSqrt(std::vector<Rational> coords, int level);
 

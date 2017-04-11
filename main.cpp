@@ -35,6 +35,7 @@ int main() {
 
     std::vector<Rational> coords3(myRationals, myRationals + sizeof(myRationals) / sizeof(Rational)),
                           coords4(myRationals2, myRationals2 + sizeof(myRationals2) / sizeof(Rational));
+
     FieldElement myElement(&fieldtower, 3, coords3),
                  myElement2(&fieldtower, 2, coords4),
                  mySum, 
