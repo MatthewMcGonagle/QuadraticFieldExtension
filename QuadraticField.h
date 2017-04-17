@@ -22,7 +22,7 @@ public:
 
 	Rational Inverse();
 
-	bool IsZero();
+	bool IsZero() const;
 	bool FindSqrt();
 	int GetSqrtP(){return sqrtp;}
 	int GetSqrtQ(){return sqrtq;}
@@ -41,20 +41,23 @@ private:
 
 /////////////////////////////////
 
+class Coordinates;
+
 class CoordinatesRange {
     public:
-    CoordinatesRange(){length = 0;};
-    CoordinatesRange( std::vector<Rational>::iterator beginIt_
-                    , std::vector<Rational>::iterator endIt_
-                    , int length_);
+    CoordinatesRange(){length = -1;};
+    CoordinatesRange( std::vector<Rational>::iterator beginIt_, int length_);
+    CoordinatesRange( std::vector<Rational> coord);
 
     CoordinatesRange& operator += (const CoordinatesRange& rhs);
-    std::vector<Rational> operator + (const CoordinatesRange& rhs) const;
     CoordinatesRange& operator -= (const CoordinatesRange& rhs);
-    std::vector<Rational> operator - (const CoordinatesRange& rhs) const;
+    CoordinatesRange& operator *= (const Rational& rhs);
+    std::vector<Rational>::iterator begin() {return beginIt;};
+    std::vector<Rational>::iterator middle() {return beginIt + length / 2;};
+    std::pair<CoordinatesRange, CoordinatesRange> splitToPair();
+    int size() { return length;};
 
-
-    std::vector<Rational>::iterator beginIt, endIt;
+    std::vector<Rational>::iterator beginIt;
     int length;
 };
 
@@ -63,8 +66,8 @@ class CoordinatesRange {
 class Coordinates {
 
     public:
-        Coordinates() {coordinates = std::vector<Rational>(0);};
-        Coordinates(std::vector<Rational> coord){ coordinates = coord;};
+        Coordinates() {coordinates = std::vector<Rational>(0); level = -1;};
+        Coordinates(std::vector<Rational> coord, int level_){ coordinates = coord; level = level_;};
 
         Coordinates& operator+=(const Coordinates& rhs);
         Coordinates operator+(const Coordinates& rhs) const;
@@ -80,8 +83,10 @@ class Coordinates {
         std::vector<Rational>::iterator middle() {return coordinates.begin() + size() / 2;};
         std::vector<Rational>::const_iterator middle() const {coordinates.begin() + size() / 2;};
         int size() const {return coordinates.size();};
+        bool isZero() const;
 
         std::vector<Rational> coordinates;        
+        int level;
 
 }; 
 
@@ -118,7 +123,6 @@ private:
 class QuadraticFieldTower {
 	public:
 		QuadraticFieldTower(Rational Square_);
-		void AddSquare(std::vector<Rational> coords);
 		std::string Print();
 		std::string PrintRootList();
 		std::complex<double> toComplex(std::vector<Rational> & coords);
@@ -129,16 +133,23 @@ class QuadraticFieldTower {
                             , int lhsLevel, int rhsLevel, std::vector<Rational>& solution);
         std::vector<Rational> multiply( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
                                       , int lhsLevel, int rhsLevel);
+        Coordinates multiply( const Coordinates& lhs, const Coordinates& rhs, int lhsLevel, int rhsLevel);
+        Coordinates inverse(Coordinates& x, int level);
 
 	private:
-        bool sqrtExistsResult;
+        bool sqrtExistsResult, inverseExists;
 		int degree, numsquares;
         std::vector<Rational> sqrtResult;
 		std::vector< std::vector<Rational> > squares;
 		std::vector< std::complex<double> > complexroots;
 
-        void multiplyLhsLargest(std::vector<Rational>::const_iterator lhs, std::vector<Rational>::const_iterator rhs, std::vector<Rational>::iterator solutionIt, int lhsLength, int rhsLength, int lhsLevel);
+        void multiplyLhsLargest( std::vector<Rational>::const_iterator lhs
+                               , std::vector<Rational>::const_iterator rhs
+                               , std::vector<Rational>::iterator solutionIt
+                               , const int lhsLength, const int rhsLength, const int lhsLevel) const;
+        void multiplyLhsLargest( CoordinatesRange lhs, CoordinatesRange rhs, CoordinatesRange solution, int level);
         std::vector<Rational> getSqrt(std::vector<Rational> coords, int level);
+        Coordinates getSqrt(Coordinates& x, int level);
 
 };
 

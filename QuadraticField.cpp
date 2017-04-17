@@ -138,7 +138,7 @@ Rational Rational::Inverse() {
 		return Rational(den, num);
 }
 
-bool Rational::IsZero() {
+bool Rational::IsZero() const {
 	if(num== 0)
 		return true;
 	else
@@ -174,62 +174,62 @@ double Rational::ToFloat() {
 
 //////////////////////////////////////////////
 
-CoordinatesRange::CoordinatesRange( std::vector<Rational>::iterator beginIt_
-                            , std::vector<Rational>::iterator endIt_
-                            , int length_ 
-                            ) {
+CoordinatesRange::CoordinatesRange( std::vector<Rational>::iterator beginIt_, int length_ ) {
     beginIt = beginIt_;
-    endIt = endIt_;
     length = length_;
 }
 
+CoordinatesRange::CoordinatesRange( std::vector<Rational> coord) {
+    beginIt = coord.begin();
+    length = coord.size();
+}
 
 CoordinatesRange& CoordinatesRange::operator += ( const CoordinatesRange& rhs) {
-    std::vector<Rational>::iterator iIt, jIt;
+    std::vector<Rational>::iterator iIt = beginIt, jIt = rhs.beginIt;
+    int numAddable;
+    if (length < rhs.length)
+        numAddable = length;
+    else
+        numAddable = rhs.length;
 
-    for ( iIt = beginIt, jIt = rhs.beginIt
-        ; iIt != endIt && jIt != rhs.endIt
-        ; iIt++, jIt++
-        )
-        
+    for ( int i = 0; i < numAddable; i++, iIt++, jIt++)  
         *iIt += *jIt; 
 
     return *this;
 
 }
 
-std::vector<Rational> CoordinatesRange::operator + (const CoordinatesRange& rhs) const {
-    std::vector<Rational> result(beginIt, endIt);
-    CoordinatesRange resultRange(result.begin(), result.end(), result.size());
-
-    resultRange += rhs;
-    return result;
-
-}
-
 CoordinatesRange& CoordinatesRange::operator -= ( const CoordinatesRange& rhs) {
-    std::vector<Rational>::iterator iIt, jIt;
+    std::vector<Rational>::iterator iIt = beginIt, jIt = rhs.beginIt;
+    int numAddable;
+    
+    if (length < rhs.length)
+        numAddable = length;
+    else
+        numAddable = rhs.length;
 
-    for ( iIt = beginIt, jIt = rhs.beginIt
-        ; iIt != endIt && jIt != rhs.endIt
-        ; iIt++, jIt++
-        )
-        
+    for ( int i = 0; i < numAddable; i++, iIt++, jIt++)  
         *iIt -= *jIt; 
 
     return *this;
 
 }
 
-std::vector<Rational> CoordinatesRange::operator - (const CoordinatesRange& rhs) const {
-    std::vector<Rational> result(beginIt, endIt);
-    CoordinatesRange resultRange(result.begin(), result.end(), result.size());
+CoordinatesRange& CoordinatesRange::operator *= (const Rational& rhs) {
+    std::vector<Rational>::iterator iIt = beginIt;
 
-    resultRange -= rhs;
-    return result;
+    for (int i = 0; i < length; i++, iIt++)
+        *iIt *= rhs;
 
+    return *this;
 }
 
+std::pair<CoordinatesRange, CoordinatesRange> CoordinatesRange::splitToPair() {
+    CoordinatesRange first(begin(), length / 2),
+                     second(middle(), length / 2);
+    
+    return std::pair<CoordinatesRange, CoordinatesRange>(first, second);
+}
 
 //////////////////////////////////////////////
 
@@ -248,7 +248,7 @@ Coordinates& Coordinates::operator += (const Coordinates& rhs) {
 }
 
 Coordinates Coordinates::operator + (const Coordinates& rhs) const {
-    Coordinates result(coordinates);
+    Coordinates result = *this;
     result += rhs;
     return result;
 } 
@@ -285,6 +285,20 @@ Coordinates& Coordinates::operator *= (const Rational& scaling) {
 Coordinates Coordinates::operator * (const Rational& scaling) const {
    Coordinates result = *this;
    return result; 
+}
+
+bool Coordinates::isZero() const {
+    bool stillAllZero = true;
+    std::vector<Rational>::const_iterator coordIt, 
+                                          end = coordinates.end();
+
+    for (coordIt = coordinates.begin(); coordIt != end && stillAllZero; coordIt++) {
+        if (!(*coordIt).IsZero())
+            stillAllZero = false;
+    }
+
+    return stillAllZero;
+
 }
 /////////////////////////////////////////////
 
@@ -385,34 +399,6 @@ QuadraticFieldTower::QuadraticFieldTower(Rational square_) {
 	complexroots = std::vector< std::complex<double> >(1, newcomplexroot); 
 	degree = 2;
 	numsquares = 1; 
-}
-
-void QuadraticFieldTower::AddSquare(std::vector<Rational> coords) {
-	std::complex<double> result(0.0, 0.0), temp(0.0, 0.0);
-	int whichsquare, mask;
-
-	if (coords.size() == degree) {
-		squares.push_back(coords);
-		for(int i=0; i<degree; i++) {
-			temp = std::complex<double>(1.0,0.0);
-			whichsquare = 0;
-			mask = 1;
-			while(mask < degree) {
-				if( (i & mask) != 0) {
-					temp *= complexroots[whichsquare];
-				}	
-				mask *= 2;
-				whichsquare++;
-			}
-			temp *= std::complex<double>( coords[i].ToFloat(), 0.0);
-			result += temp;	
-		}
-		result = std::sqrt(result);
-		complexroots.push_back(result);
-		degree *= 2;
-		numsquares++;	
-	}
-
 }
 
 std::string QuadraticFieldTower::Print() {
@@ -522,7 +508,49 @@ std::vector<Rational> QuadraticFieldTower::multiply (const std::vector<Rational>
  
 }
 
-void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, int lhsLength, int rhsLength, int lhsLevel) {
+Coordinates QuadraticFieldTower::multiply (const Coordinates &lhs, const Coordinates& rhs, int lhsLevel, int rhsLevel) {
+    std::vector<Rational> result;
+
+    multiplyInPlace(lhs.coordinates, rhs.coordinates, lhsLevel, rhsLevel, result);
+    return Coordinates(result, lhsLevel);
+}
+
+Coordinates QuadraticFieldTower::inverse(Coordinates& x, int level) {
+    // MISSING non-zero check
+    Coordinates a, b, scratch; // x = a + r * b. Think of a and b as existing in the sub-field.
+    std::vector<Rational> result(x.size());
+    int middleoffset, sublevel = level - 1;
+
+    if(level < 1) {
+       result[0] = x.coordinates[0].Inverse(); 
+       return Coordinates(result, level);
+    }
+    
+    middleoffset = x.size() / 2;
+    a = Coordinates( std::vector<Rational> ( x.coordinates.begin()
+                                           , x.coordinates.begin() + middleoffset
+                                           ) 
+                   , sublevel );
+    b = Coordinates( std::vector<Rational> ( x.coordinates.begin() + middleoffset
+                                           , x.coordinates.end()
+                                           ) 
+                   , sublevel );
+    
+
+    // a^2 - r^2 * b^2.
+    scratch = Coordinates(squares[level - 1], sublevel);
+    scratch = multiply(b, scratch, level - 1, level - 1);
+    b *= Rational(-1, 1);
+    scratch = multiply(b, scratch, level - 1, level - 1);
+    scratch += multiply(a, a, level - 1, level - 1);
+    scratch = inverse(scratch, level - 1);
+    
+    // Need to concatenate a and b. Then multiply by scratch to get the full inverse. 
+
+    return Coordinates(std::vector<Rational>(0), -1);
+}
+
+void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, const int lhsLength, const int rhsLength, const int lhsLevel) const {
 
     std::vector<Rational> scratch (lhsLength);
     int sublength = lhsLength / 2, sublevel = lhsLevel - 1;
@@ -585,6 +613,57 @@ void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_itera
          
 }
 
+void QuadraticFieldTower::multiplyLhsLargest(CoordinatesRange lhs, CoordinatesRange rhs, CoordinatesRange solution, int lhsLevel) {
+    std::vector<Rational> scratch1, scratch2, scratch;
+    CoordinatesRange scratchRange;
+
+    int sublength = lhs.size() / 2, sublevel = lhsLevel - 1;
+    std::pair<CoordinatesRange, CoordinatesRange> lhsPair, rhsPair, solPair, scratchPair;
+
+    if (lhsLevel < 1) {
+        *solution.begin() = *lhs.begin() * *rhs.begin();
+        return;
+    }
+
+    else if( lhs.size() > rhs.size() ) {
+        lhsPair = lhs.splitToPair();
+        solPair = solution.splitToPair();
+
+        // First handle multiplication of cross terms. No need to use root here. 
+
+        multiplyLhsLargest(lhsPair.second, rhs, solPair.second, sublevel);
+
+        // Now handle the non-cross terms.
+
+        multiplyLhsLargest(lhsPair.first, rhs, solPair.first, sublevel); 
+
+    }
+
+    else { 
+        lhsPair = lhs.splitToPair();
+        rhsPair = rhs.splitToPair();
+        solPair = solution.splitToPair();
+        scratch = std::vector<Rational>( sublength );
+        scratchRange = CoordinatesRange(scratch);
+ 
+        // First handle multiplication of cross terms. No need to use root here. 
+
+        multiplyLhsLargest(lhsPair.first, rhsPair.second, solPair.second, sublevel);
+        multiplyLhsLargest(lhsPair.second, rhsPair.first, scratchRange, sublevel);
+
+        solPair.second += scratchRange; 
+
+        // Now do non-cross terms. Need to use the root here.
+
+        multiplyLhsLargest(lhsPair.second, rhsPair.second, scratchRange, sublevel);
+        multiplyLhsLargest(scratchRange, CoordinatesRange(squares[lhsLevel-1]), solPair.first, sublevel); 
+        multiplyLhsLargest(lhsPair.first, rhsPair.first, scratchRange, sublevel);
+        
+        solPair.first += scratchRange;
+
+    } 
+}
+
 std::vector<Rational> QuadraticFieldTower::getSqrt(std::vector<Rational> coords, int level) {
 
     FieldElement a, b; // Think of coordinates as a + r * b where a and b are in the sub-field. 
@@ -617,6 +696,85 @@ std::vector<Rational> QuadraticFieldTower::getSqrt(std::vector<Rational> coords,
                      , level - 1); 
 
    return subSqrt2;
+}
+
+
+Coordinates QuadraticFieldTower::getSqrt(Coordinates& x, int level) {
+    Coordinates a, b; // Think of x = a + r * b where a and b are coordinates in the subfield.
+    Coordinates subSqrt, subSqrt2, scratch; 
+    std::vector <Rational> result;
+    int middleoffset, sublevel;
+
+    if (level < 1) {
+        sqrtExistsResult = x.coordinates[0].FindSqrt(); 
+           if(sqrtExistsResult) 
+               result = std::vector<Rational> (1, x.coordinates[0].GetSqrt()); 
+           else 
+               result = std::vector<Rational> (0);
+           return Coordinates(result, level);
+    }
+
+    middleoffset = x.coordinates.size() / 2;
+    a = Coordinates( std::vector<Rational>( x.coordinates.begin()
+                                          , x.coordinates.begin() + middleoffset
+                                          ) 
+                   , sublevel );
+    b = Coordinates( std::vector<Rational>( x.coordinates.begin() + middleoffset
+                                          , x.coordinates.begin() + middleoffset
+                                          ) 
+                   , sublevel );
+
+    if(!b.isZero()) {
+
+        subSqrt = multiply(a, a, sublevel, sublevel);
+        subSqrt2 = multiply(b, b, sublevel, sublevel);
+        subSqrt2 = multiply(Coordinates(squares[level], sublevel), subSqrt2, sublevel, sublevel);
+        subSqrt -= subSqrt2;
+        subSqrt = getSqrt(subSqrt, level - 1);
+   
+        if(! sqrtExistsResult) 
+           return Coordinates(std::vector<Rational>(0), -1); 
+
+        subSqrt2 = (a + subSqrt) * Rational(1,2);
+        scratch = getSqrt(subSqrt2, sublevel);
+
+        if(sqrtExistsResult && !scratch.isZero()) {
+
+           subSqrt = b * Rational(1,2);
+           subSqrt = multiply(subSqrt, inverse(scratch, sublevel), sublevel, sublevel);
+           //return (scratch, subSqrt); 
+        }
+        
+        subSqrt2 = (a - subSqrt) * Rational(1,2);
+        scratch = getSqrt(subSqrt2, sublevel);
+
+        if(sqrtExistsResult && !scratch.isZero()) {
+
+            subSqrt = b * Rational(1, 2);
+            subSqrt = multiply(subSqrt, inverse(scratch, sublevel), sublevel, sublevel); 
+            // return (scratch, subSqrt);
+        }
+
+        sqrtExistsResult = false;
+        return Coordinates(std::vector<Rational>(0), -1);
+
+    }
+    else { // now  in the case that b = 0
+        subSqrt = getSqrt(a, sublevel);
+        if(sqrtExistsResult) {
+            // return (subSqrt, 0);
+        }
+    
+        //scratch = a * inverse( Coordinates(squares[sublevel]), sublevel);
+        subSqrt = getSqrt(scratch, sublevel);
+        if(sqrtExistsResult) {
+            // return (0, subSqrt);
+        }
+        
+        sqrtExistsResult = false;
+        return Coordinates(std::vector<Rational>(0), -1);    
+    }
+
 }
 //////////////////////////////////////////////
 
