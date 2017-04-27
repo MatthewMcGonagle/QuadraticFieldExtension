@@ -550,6 +550,20 @@ Coordinates QuadraticFieldTower::inverse(Coordinates& x, int level) {
     return Coordinates(std::vector<Rational>(0), -1);
 }
 
+void QuadraticFieldTower::AddSquare(std::vector<Rational>& root) {
+    std::complex<double> newcomplexroot;
+ 
+    if (root.size() != degree)
+        return;
+    degree *= 2;
+    numsquares++;
+    squares.push_back(root); 
+
+    newcomplexroot = toComplex(root);
+    newcomplexroot = std::sqrt(newcomplexroot);
+    complexroots.push_back(newcomplexroot);
+}
+
 void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, const int lhsLength, const int rhsLength, const int lhsLevel) const {
 
     std::vector<Rational> scratch (lhsLength);

@@ -135,6 +135,7 @@ class QuadraticFieldTower {
                                       , int lhsLevel, int rhsLevel);
         Coordinates multiply( const Coordinates& lhs, const Coordinates& rhs, int lhsLevel, int rhsLevel);
         Coordinates inverse(Coordinates& x, int level);
+        void AddSquare(std::vector<Rational>& square);
 
 	private:
         bool sqrtExistsResult, inverseExists;
