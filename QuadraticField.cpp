@@ -18,7 +18,6 @@ Rational::Rational(int p, int q) {
 	num = p;
 	den = q;
 
-	name = std::string();
 }
 
 unsigned int Rational::gcd(int p, int q) const {
@@ -43,6 +42,7 @@ unsigned int Rational::abs(int p) const {
 std::string Rational::print() {
 
 	std::ostringstream convert;
+    std::string name;
 
 	convert << num;
 	name = convert.str();

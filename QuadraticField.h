@@ -7,7 +7,7 @@
 
 class Rational {
 public:
-	Rational(){num = 1; den = 1; name = std::string();};
+	Rational(){num = 1; den = 1; }; 
 	Rational(int p, int q);
 
 	int GetP() const {return num;};
@@ -36,7 +36,6 @@ private:
 
 	int num, den;
 	int sqrtp, sqrtq;
-	std::string name;
 };
 
 /////////////////////////////////
@@ -139,6 +138,10 @@ class QuadraticFieldTower {
         Coordinates multiply( const Coordinates& lhs, const Coordinates& rhs);
         Coordinates inverse(Coordinates& x, int level);
         void AddSquare(Coordinates &square);
+
+        int getNumSquares() {return numsquares;}
+        int getDegree() {return degree;}
+        int getLevel() {return numsquares - 1;}
 
 	private:
         bool sqrtExistsResult, inverseExists;
