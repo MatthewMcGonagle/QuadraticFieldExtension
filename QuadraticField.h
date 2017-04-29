@@ -48,6 +48,7 @@ class CoordinatesRange {
     CoordinatesRange(){length = -1;};
     CoordinatesRange( std::vector<Rational>::iterator beginIt_, int length_);
     CoordinatesRange( std::vector<Rational> coord);
+    CoordinatesRange( Coordinates & coord);
 
     CoordinatesRange& operator += (const CoordinatesRange& rhs);
     CoordinatesRange& operator -= (const CoordinatesRange& rhs);
@@ -82,8 +83,10 @@ class Coordinates {
         std::vector<Rational>::const_iterator end() const {return coordinates.end();};
         std::vector<Rational>::iterator middle() {return coordinates.begin() + size() / 2;};
         std::vector<Rational>::const_iterator middle() const {coordinates.begin() + size() / 2;};
+
         int size() const {return coordinates.size();};
         bool isZero() const;
+        std::string print() ;
 
         std::vector<Rational> coordinates;        
         int level;
@@ -100,20 +103,19 @@ class FieldElement {
 
 public:
 	FieldElement();
-	FieldElement(QuadraticFieldTower* field, int level, std::vector<Rational> coords_);
+	FieldElement(QuadraticFieldTower* field, Coordinates &coordinates_); 
 	
 	std::string Print();
 	FieldElement& operator+=(const FieldElement& rhs);
     FieldElement& operator-=(const FieldElement& rhs);
-	FieldElement& operator*=(const FieldElement& rhs);
+	// FieldElement& operator*=(const FieldElement& rhs);
 
     FieldElement operator+(const FieldElement& rhs);
     FieldElement operator-(const FieldElement& rhs);
-    FieldElement operator*(const FieldElement& rhs);
+    // FieldElement operator*(const FieldElement& rhs);
 
-	std::vector<Rational> coords;
+    Coordinates coordinates;
     QuadraticFieldTower* field;
-    int level;
 
 private:
 
@@ -125,32 +127,32 @@ class QuadraticFieldTower {
 		QuadraticFieldTower(Rational Square_);
 		std::string Print();
 		std::string PrintRootList();
-		std::complex<double> toComplex(std::vector<Rational> & coords);
+		std::complex<double> toComplex(Coordinates& x);
         std::complex<double> toComplex(FieldElement &x);
 
         bool sqrtExists(std::vector<Rational> &coords);
-        void multiplyInPlace( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
-                            , int lhsLevel, int rhsLevel, std::vector<Rational>& solution);
-        std::vector<Rational> multiply( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
-                                      , int lhsLevel, int rhsLevel);
-        Coordinates multiply( const Coordinates& lhs, const Coordinates& rhs, int lhsLevel, int rhsLevel);
+        // void multiplyInPlace( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
+        //                     , int lhsLevel, int rhsLevel, std::vector<Rational>& solution);
+        void multiplyInPlace( const Coordinates& lhs, const Coordinates& rhs, Coordinates& solution); 
+        // std::vector<Rational> multiply( const std::vector<Rational>& lhs, const std::vector<Rational>& rhs
+        //                               , int lhsLevel, int rhsLevel);
+        Coordinates multiply( const Coordinates& lhs, const Coordinates& rhs);
         Coordinates inverse(Coordinates& x, int level);
-        void AddSquare(std::vector<Rational>& square);
+        void AddSquare(Coordinates &square);
 
 	private:
         bool sqrtExistsResult, inverseExists;
 		int degree, numsquares;
         std::vector<Rational> sqrtResult;
 		std::vector< std::vector<Rational> > squares;
+        std::vector<Coordinates> rootsSquared;
 		std::vector< std::complex<double> > complexroots;
 
-        void multiplyLhsLargest( std::vector<Rational>::const_iterator lhs
-                               , std::vector<Rational>::const_iterator rhs
-                               , std::vector<Rational>::iterator solutionIt
-                               , const int lhsLength, const int rhsLength, const int lhsLevel) const;
+        // void multiplyLhsLargest( std::vector<Rational>::const_iterator lhs
+        //                        , std::vector<Rational>::const_iterator rhs
+        //                        , std::vector<Rational>::iterator solutionIt
+        //                        , const int lhsLength, const int rhsLength, const int lhsLevel) const;
         void multiplyLhsLargest( CoordinatesRange lhs, CoordinatesRange rhs, CoordinatesRange solution, int level);
-        std::vector<Rational> getSqrt(std::vector<Rational> coords, int level);
         Coordinates getSqrt(Coordinates& x, int level);
-
 };
 

@@ -184,6 +184,12 @@ CoordinatesRange::CoordinatesRange( std::vector<Rational> coord) {
     length = coord.size();
 }
 
+CoordinatesRange::CoordinatesRange( Coordinates &coord) {
+
+    CoordinatesRange(coord.coordinates);
+
+}
+
 CoordinatesRange& CoordinatesRange::operator += ( const CoordinatesRange& rhs) {
     std::vector<Rational>::iterator iIt = beginIt, jIt = rhs.beginIt;
     int numAddable;
@@ -300,27 +306,15 @@ bool Coordinates::isZero() const {
     return stillAllZero;
 
 }
-/////////////////////////////////////////////
 
-FieldElement::FieldElement() {
-    level = -1;
-    field = NULL;
-}
-
-FieldElement::FieldElement(QuadraticFieldTower* field_, int level_, std::vector<Rational> coords_) {
-	coords = coords_;
-    level = level_; 
-    field = field_;
-}
-
-std::string FieldElement::Print() {
+std::string Coordinates::print() {
 	int whichroots, currentroot;
 	std::ostringstream ss;
 	std::string name = std::string();
-	for(int i=0; i < coords.size(); i++) {
+	for(int i=0; i < coordinates.size(); i++) {
 		if(i > 0)
 			name += " + ";
-		name += coords[i].print();
+		name += coordinates[i].print();
 		whichroots = i;	
 		currentroot = 1;
 		if(i > 0)
@@ -336,67 +330,74 @@ std::string FieldElement::Print() {
 		}
 	}
 	return name;
+
+}
+
+/////////////////////////////////////////////
+
+FieldElement::FieldElement() {
+    field = NULL;
+}
+
+FieldElement::FieldElement(QuadraticFieldTower* field_, Coordinates &coordinates_) { 
+    coordinates = coordinates_;
+    field = field_;
+}
+
+std::string FieldElement::Print() {
+
+    return coordinates.print();
+
 }
 
 
 FieldElement& FieldElement :: operator += (const FieldElement& rhs) {
 
-	int maxindex = coords.size(); 
-
-	if(rhs.coords.size() < maxindex)
-		maxindex = rhs.coords.size();
-
-	for(int i = 0; i < maxindex; i++) 
-		coords[i] = coords[i] + rhs.coords[i];	
+    coordinates += rhs.coordinates;
 
 	return *this;
 }
 
 FieldElement& FieldElement :: operator -= (const FieldElement& rhs) {
 
-	int maxindex = coords.size(); 
-
-	if(rhs.coords.size() < maxindex)
-		maxindex = rhs.coords.size();
-
-	for(int i = 0; i < maxindex; i++) 
-		coords[i] = coords[i] - rhs.coords[i];	
+    coordinates -= rhs.coordinates;
 
 	return *this;
 }
 
-FieldElement& FieldElement :: operator *= (const FieldElement& rhs) {
-	coords = field -> multiply(coords, rhs.coords, level, rhs.level);
-    return *this;
-}
+// FieldElement& FieldElement :: operator *= (const FieldElement& rhs) {
+// 	coords = field -> multiply(coords, rhs.coords, level, rhs.level);
+//     return *this;
+// }
 
 FieldElement FieldElement :: operator + (const FieldElement& rhs) {
-    std::vector<Rational> result = coords;
-    FieldElement resultField(field, level, result);
+    FieldElement result = *this;
 
-    return resultField += rhs; 
+    return result += rhs; 
 }
 
 FieldElement FieldElement :: operator - (const FieldElement &rhs) {
-    std::vector<Rational> result = coords;
-    FieldElement resultField(field, level, result);
+    FieldElement result = *this;
 
-    return resultField -= rhs;
+    return result += rhs; 
 }
 
-FieldElement FieldElement :: operator * (const FieldElement& rhs) {
-    FieldElement solution = *this;
-    return solution *= rhs;
-}
+// FieldElement FieldElement :: operator * (const FieldElement& rhs) {
+//     FieldElement solution = *this;
+//     return solution *= rhs;
+// }
 
 /////////////////////////////////////////////
 
 QuadraticFieldTower::QuadraticFieldTower(Rational square_) {
 	std::complex<double> newcomplexroot = std::complex<double>(square_.ToFloat(), 0);
 	newcomplexroot = std::sqrt(newcomplexroot);
+    Coordinates initial = Coordinates(std::vector<Rational>(1, square_), 0);
 
 	squares = std::vector< std::vector<Rational> >(1, std::vector<Rational>(1, square_) );
+    rootsSquared = std::vector<Coordinates>(1, initial); 
 	complexroots = std::vector< std::complex<double> >(1, newcomplexroot); 
+
 	degree = 2;
 	numsquares = 1; 
 }
@@ -432,35 +433,56 @@ std::string QuadraticFieldTower::PrintRootList() {
 		oss << i+1;
 		name += oss.str();
 		name += " = Sqrt( ";
-		name += FieldElement(this, i, squares[i]).Print(); //PrintCoords(squares[i]);	
+		name += rootsSquared[i].print(); 
 		name += " )\n";		
 	}
 	return name;
 }
 
-std::complex<double> QuadraticFieldTower::toComplex(std::vector<Rational> & coords) {
+std::complex<double> QuadraticFieldTower::toComplex(Coordinates& x) {
 	std::complex<double> result(0.0,0.0), temp;
 	int whichroot, mask;
 	
-	for(int i=0; i<coords.size(); i++) {
+	for(int i=0; i<x.coordinates.size(); i++) {
 		temp = std::complex<double>(1.0, 0.0);
 		whichroot = 0;
 		mask = 1;
-		while(mask < coords.size()) {
+		while(mask < x.coordinates.size()) {
 			if((i & mask) != 0) {
 				temp *= complexroots[whichroot];
 			}
 			mask *= 2;
 			whichroot++;
 		}
-		temp *= std::complex<double>( coords[i].ToFloat(), 0.0);
+		temp *= std::complex<double>( x.coordinates[i].ToFloat(), 0.0);
 		result += temp;
 	}
 	return result;
 }
 
+// std::complex<double> QuadraticFieldTower::toComplex(std::vector<Rational> & coords) {
+// 	std::complex<double> result(0.0,0.0), temp;
+// 	int whichroot, mask;
+// 	
+// 	for(int i=0; i<coords.size(); i++) {
+// 		temp = std::complex<double>(1.0, 0.0);
+// 		whichroot = 0;
+// 		mask = 1;
+// 		while(mask < coords.size()) {
+// 			if((i & mask) != 0) {
+// 				temp *= complexroots[whichroot];
+// 			}
+// 			mask *= 2;
+// 			whichroot++;
+// 		}
+// 		temp *= std::complex<double>( coords[i].ToFloat(), 0.0);
+// 		result += temp;
+// 	}
+// 	return result;
+// }
+
 std::complex<double> QuadraticFieldTower::toComplex(FieldElement &x) {
-    return toComplex(x.coords);
+    return toComplex(x.coordinates);
 }
 
 bool QuadraticFieldTower::sqrtExists(std::vector<Rational> &coords) {
@@ -473,46 +495,70 @@ bool QuadraticFieldTower::sqrtExists(std::vector<Rational> &coords) {
     return true;
 }
 
-void QuadraticFieldTower::multiplyInPlace(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel, std::vector<Rational>& solution) {
+// void QuadraticFieldTower::multiplyInPlace(const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel, std::vector<Rational>& solution) {
+// 
+//     std::vector<Rational>::const_iterator lhsIt, rhsIt;
+//     int newLhsSize, newRhsSize, newLhsLevel;
+// 
+//     if (lhs.size() > rhs.size()) {
+//         lhsIt = lhs.begin();
+//         rhsIt = rhs.begin();
+//         newLhsLevel = lhsLevel;
+//         newLhsSize = lhs.size();
+//         newRhsSize = rhs.size();
+//     }
+//     else {
+//         lhsIt = rhs.begin();
+//         rhsIt = lhs.begin();
+//         newLhsLevel = rhsLevel;
+//         newLhsSize = rhs.size();
+//         newRhsSize = lhs.size();
+//     }
+// 
+//     solution = std::vector<Rational> (newLhsSize); 
+// 
+//     multiplyLhsLargest(lhsIt, rhsIt, solution.begin(), newLhsSize, newRhsSize, newLhsLevel);
+// 
+// }
 
-    std::vector<Rational>::const_iterator lhsIt, rhsIt;
-    int newLhsSize, newRhsSize, newLhsLevel;
+void QuadraticFieldTower::multiplyInPlace(const Coordinates &lhs, const Coordinates &rhs, Coordinates &solution) {
+    Coordinates lhscopy = lhs, rhscopy = rhs; // This is quick band aid for need to make const_CoordinatesRange class.
+    CoordinatesRange lhsRange(lhscopy), rhsRange(rhscopy), newLhsRange, newRhsRange, solutionRange;
+    int level;
 
     if (lhs.size() > rhs.size()) {
-        lhsIt = lhs.begin();
-        rhsIt = rhs.begin();
-        newLhsLevel = lhsLevel;
-        newLhsSize = lhs.size();
-        newRhsSize = rhs.size();
+        newLhsRange = lhsRange;
+        newRhsRange = rhsRange;
+        level = lhs.level;
     }
     else {
-        lhsIt = rhs.begin();
-        rhsIt = lhs.begin();
-        newLhsLevel = rhsLevel;
-        newLhsSize = rhs.size();
-        newRhsSize = lhs.size();
+        newLhsRange = rhsRange;
+        newRhsRange = lhsRange;
+        level = rhs.level;
     }
 
-    solution = std::vector<Rational> (newLhsSize); 
+    solution = Coordinates(std::vector<Rational> (newLhsRange.length), newLhsRange.length);
+    solutionRange = CoordinatesRange(solution);
 
-    multiplyLhsLargest(lhsIt, rhsIt, solution.begin(), newLhsSize, newRhsSize, newLhsLevel);
+    multiplyLhsLargest(newLhsRange, newRhsRange, solutionRange, level);
 
 }
 
-std::vector<Rational> QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel) {
+// std::vector<Rational> QuadraticFieldTower::multiply (const std::vector<Rational>& lhs, const std::vector<Rational>& rhs, int lhsLevel, int rhsLevel) {
+// 
+//     std::vector<Rational> solution;
+// 
+//     multiplyInPlace(lhs, rhs, lhsLevel, rhsLevel, solution); 
+//     return solution;
+//  
+// }
 
-    std::vector<Rational> solution;
+Coordinates QuadraticFieldTower::multiply(const Coordinates &lhs, const Coordinates &rhs) {
 
-    multiplyInPlace(lhs, rhs, lhsLevel, rhsLevel, solution); 
+    Coordinates solution;
+    
+    multiplyInPlace(lhs, rhs, solution);
     return solution;
- 
-}
-
-Coordinates QuadraticFieldTower::multiply (const Coordinates &lhs, const Coordinates& rhs, int lhsLevel, int rhsLevel) {
-    std::vector<Rational> result;
-
-    multiplyInPlace(lhs.coordinates, rhs.coordinates, lhsLevel, rhsLevel, result);
-    return Coordinates(result, lhsLevel);
 }
 
 Coordinates QuadraticFieldTower::inverse(Coordinates& x, int level) {
@@ -538,11 +584,11 @@ Coordinates QuadraticFieldTower::inverse(Coordinates& x, int level) {
     
 
     // a^2 - r^2 * b^2.
-    scratch = Coordinates(squares[level - 1], sublevel);
-    scratch = multiply(b, scratch, level - 1, level - 1);
+    scratch = rootsSquared[level - 1];
+    scratch = multiply(b, scratch);
     b *= Rational(-1, 1);
-    scratch = multiply(b, scratch, level - 1, level - 1);
-    scratch += multiply(a, a, level - 1, level - 1);
+    scratch = multiply(b, scratch);
+    scratch += multiply(a, a);
     scratch = inverse(scratch, level - 1);
     
     // Need to concatenate a and b. Then multiply by scratch to get the full inverse. 
@@ -550,82 +596,83 @@ Coordinates QuadraticFieldTower::inverse(Coordinates& x, int level) {
     return Coordinates(std::vector<Rational>(0), -1);
 }
 
-void QuadraticFieldTower::AddSquare(std::vector<Rational>& root) {
+void QuadraticFieldTower::AddSquare(Coordinates &root) {
     std::complex<double> newcomplexroot;
+    Coordinates coord;
  
-    if (root.size() != degree)
+    if (root.coordinates.size() != degree)
         return;
     degree *= 2;
     numsquares++;
-    squares.push_back(root); 
+    rootsSquared.push_back(root);
 
     newcomplexroot = toComplex(root);
     newcomplexroot = std::sqrt(newcomplexroot);
     complexroots.push_back(newcomplexroot);
 }
 
-void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, const int lhsLength, const int rhsLength, const int lhsLevel) const {
-
-    std::vector<Rational> scratch (lhsLength);
-    int sublength = lhsLength / 2, sublevel = lhsLevel - 1;
-    std::vector<Rational>::const_iterator lhsMiddleIt = lhsIt + lhsLength / 2, 
-                                          rhsMiddleIt = rhsIt + rhsLength / 2; 
-    std::vector<Rational>::iterator solMiddleIt = solutionIt + lhsLength / 2, 
-                                    scratchMiddleIt = scratch.begin() + lhsLength / 2; 
-
-    if (lhsLength < 2) {
-        *solutionIt = *lhsIt * *rhsIt;
-        return;
-    }
-   
-    else if( lhsLength > rhsLength) {
-
-        // First handle multiplication of cross terms. No need to use root here. 
-
-        multiplyLhsLargest(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, rhsLength, sublevel);
-
-        // Now handle the non-cross terms.
-
-        multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, rhsLength, sublevel); 
-
-        for( std::vector<Rational>::iterator iIt = scratch.begin(), solIt = solutionIt 
-           ; iIt != scratch.end() 
-           ; iIt++, solIt++
-           ) 
-           
-           *solIt = *iIt;
-
-    }
-
-    else { 
-
-        // First handle multiplication of cross terms. No need to use root here. 
-
-        multiplyLhsLargest(lhsIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
-        multiplyLhsLargest(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, sublength, sublevel);
-
-        for( std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solMiddleIt
-           ; iIt < scratchMiddleIt 
-           ; iIt++, jIt++, solIt++
-           ) 
-
-            *solIt = *iIt + *jIt;
-        
-        // Now do non-cross terms. Need to use the root here.
-
-        multiplyLhsLargest(lhsMiddleIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
-        multiplyLhsLargest(scratch.begin(), squares[lhsLevel-1].begin(), scratchMiddleIt, sublength, sublength, sublevel); 
-        multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, sublength, sublevel);
-
-        for( std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solutionIt
-           ; iIt < scratchMiddleIt
-           ; iIt++, jIt++, solIt++) 
-            
-            *solIt = *iIt + *jIt;
-
-    }
-         
-}
+// void QuadraticFieldTower::multiplyLhsLargest (std::vector<Rational>::const_iterator lhsIt, std::vector<Rational>::const_iterator rhsIt, std::vector<Rational>::iterator solutionIt, const int lhsLength, const int rhsLength, const int lhsLevel) const {
+// 
+//     std::vector<Rational> scratch (lhsLength);
+//     int sublength = lhsLength / 2, sublevel = lhsLevel - 1;
+//     std::vector<Rational>::const_iterator lhsMiddleIt = lhsIt + lhsLength / 2, 
+//                                           rhsMiddleIt = rhsIt + rhsLength / 2; 
+//     std::vector<Rational>::iterator solMiddleIt = solutionIt + lhsLength / 2, 
+//                                     scratchMiddleIt = scratch.begin() + lhsLength / 2; 
+// 
+//     if (lhsLength < 2) {
+//         *solutionIt = *lhsIt * *rhsIt;
+//         return;
+//     }
+//    
+//     else if( lhsLength > rhsLength) {
+// 
+//         // First handle multiplication of cross terms. No need to use root here. 
+// 
+//         multiplyLhsLargest(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, rhsLength, sublevel);
+// 
+//         // Now handle the non-cross terms.
+// 
+//         multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, rhsLength, sublevel); 
+// 
+//         for( std::vector<Rational>::iterator iIt = scratch.begin(), solIt = solutionIt 
+//            ; iIt != scratch.end() 
+//            ; iIt++, solIt++
+//            ) 
+//            
+//            *solIt = *iIt;
+// 
+//     }
+// 
+//     else { 
+// 
+//         // First handle multiplication of cross terms. No need to use root here. 
+// 
+//         multiplyLhsLargest(lhsIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
+//         multiplyLhsLargest(lhsMiddleIt, rhsIt, scratchMiddleIt, sublength, sublength, sublevel);
+// 
+//         for( std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solMiddleIt
+//            ; iIt < scratchMiddleIt 
+//            ; iIt++, jIt++, solIt++
+//            ) 
+// 
+//             *solIt = *iIt + *jIt;
+//         
+//         // Now do non-cross terms. Need to use the root here.
+// 
+//         multiplyLhsLargest(lhsMiddleIt, rhsMiddleIt, scratch.begin(), sublength, sublength, sublevel);
+//         multiplyLhsLargest(scratch.begin(), squares[lhsLevel-1].begin(), scratchMiddleIt, sublength, sublength, sublevel); 
+//         multiplyLhsLargest(lhsIt, rhsIt, scratch.begin(), sublength, sublength, sublevel);
+// 
+//         for( std::vector<Rational>::iterator iIt = scratch.begin(), jIt = scratchMiddleIt, solIt = solutionIt
+//            ; iIt < scratchMiddleIt
+//            ; iIt++, jIt++, solIt++) 
+//             
+//             *solIt = *iIt + *jIt;
+// 
+//     }
+//          
+// }
 
 void QuadraticFieldTower::multiplyLhsLargest(CoordinatesRange lhs, CoordinatesRange rhs, CoordinatesRange solution, int lhsLevel) {
     std::vector<Rational> scratch1, scratch2, scratch;
@@ -678,41 +725,6 @@ void QuadraticFieldTower::multiplyLhsLargest(CoordinatesRange lhs, CoordinatesRa
     } 
 }
 
-std::vector<Rational> QuadraticFieldTower::getSqrt(std::vector<Rational> coords, int level) {
-
-    FieldElement a, b; // Think of coordinates as a + r * b where a and b are in the sub-field. 
-    std::vector<Rational> subSqrt, subSqrt2;
-    int middleoffset;
-
-    if (level < 1) {
-       sqrtExistsResult = coords[0].FindSqrt(); 
-       if(sqrtExistsResult)
-           return std::vector<Rational> (1, coords[0].GetSqrt()); 
-       else
-           return std::vector<Rational> (0);
-    }
-
-    middleoffset = coords.size() / 2;
-    a = FieldElement( this
-                    , level - 1
-                    , std::vector<Rational>(coords.begin(), coords.begin() + middleoffset
-                    ));    
-    b = FieldElement( this
-                    , level - 1
-                    , std::vector<Rational>(coords.begin() + middleoffset, coords.begin()
-                    ));
-
-   subSqrt = getSqrt( (a * a - b * b).coords, level - 1); 
-   if(!sqrtExistsResult)
-        return std::vector<Rational>(0);
-
-   subSqrt2 = getSqrt( (a + FieldElement(this, level - 1, subSqrt)).coords
-                     , level - 1); 
-
-   return subSqrt2;
-}
-
-
 Coordinates QuadraticFieldTower::getSqrt(Coordinates& x, int level) {
     Coordinates a, b; // Think of x = a + r * b where a and b are coordinates in the subfield.
     Coordinates subSqrt, subSqrt2, scratch; 
@@ -740,9 +752,9 @@ Coordinates QuadraticFieldTower::getSqrt(Coordinates& x, int level) {
 
     if(!b.isZero()) {
 
-        subSqrt = multiply(a, a, sublevel, sublevel);
-        subSqrt2 = multiply(b, b, sublevel, sublevel);
-        subSqrt2 = multiply(Coordinates(squares[level], sublevel), subSqrt2, sublevel, sublevel);
+        subSqrt = multiply(a, a);
+        subSqrt2 = multiply(b, b);
+        subSqrt2 = multiply(Coordinates(squares[level], sublevel), subSqrt2);
         subSqrt -= subSqrt2;
         subSqrt = getSqrt(subSqrt, level - 1);
    
@@ -755,7 +767,7 @@ Coordinates QuadraticFieldTower::getSqrt(Coordinates& x, int level) {
         if(sqrtExistsResult && !scratch.isZero()) {
 
            subSqrt = b * Rational(1,2);
-           subSqrt = multiply(subSqrt, inverse(scratch, sublevel), sublevel, sublevel);
+           subSqrt = multiply(subSqrt, inverse(scratch, sublevel));
            //return (scratch, subSqrt); 
         }
         
@@ -765,7 +777,7 @@ Coordinates QuadraticFieldTower::getSqrt(Coordinates& x, int level) {
         if(sqrtExistsResult && !scratch.isZero()) {
 
             subSqrt = b * Rational(1, 2);
-            subSqrt = multiply(subSqrt, inverse(scratch, sublevel), sublevel, sublevel); 
+            subSqrt = multiply(subSqrt, inverse(scratch, sublevel));
             // return (scratch, subSqrt);
         }
 
