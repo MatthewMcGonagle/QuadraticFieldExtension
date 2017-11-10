@@ -5,6 +5,12 @@
 #include <vector>
 #include <complex>
 
+/** 
+    class Rational
+    This class is for representing fractions that involve precision arithmetic. That is, not floating point
+    arithmetic. We leave every operation as a fraction.
+*/
+
 class Rational {
 public:
 	Rational(){num = 1; den = 1; name = std::string();};
@@ -36,71 +42,61 @@ private:
 	std::string name;
 };
 
+/** 
+    struct Coordinates
+    
+    Simple wrapper for the type of coordinates, which is std::vector<Rational>.
+*/
 
-//////////////////////////////////
+struct Coordinates {
 
-class QuadraticField;
+    Coordinates(std::vector<Rational> values_)
+        : values(values_) {}
 
-// For quick computation, should only overload *= and += ?
-class FieldElement {
-public:
-	FieldElement();
-	FieldElement(QuadraticField* field_, std::vector<Rational> coords_);
-	
-	std::string Print();
-	FieldElement& operator+=(const FieldElement& rhs);
-	FieldElement& operator*=(const FieldElement& rhs);
-
-	std::vector<Rational> coords;
-	QuadraticField* field;
-
-private:
-
-	FieldElement subfieldelem(int n);
-	void multiply(std::vector<Rational>::iterator lhs, std::vector<Rational>::const_iterator rhs);
+    std::vector<Rational> values;
 };
 
-//////////////////////////////////
+/**
+    struct CoordinateRange
+
+    Holds iterators for a range of coordinates. Makes it easier to pass around subsets of coordinates
+    for operations inside class FieldTower without using copying.
+
+*/
+
+struct CoordinateRange {
+
+    CoordinateRange(std::vector<Rational>::iterator begin_, std::vector<Rational>::iterator end_, int size_)
+        : begin(begin_), end(end_), size(size_) {}
+
+    CoordinateRange firstHalf();
+    CoordinateRange secondHalf();
+
+    std::vector<Rational>::iterator begin, end;
+    int size;
+
+};
+
+/**
+    class QuadraticFieldTower
+
+*/
+
 class QuadraticFieldTower {
-	public:
-		QuadraticFieldTower(Rational Square_);
-		void AddSquare(std::vector<Rational> coords);
-		void Add(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
-		void Product(std::vector<Rational> & lhs, std::vector<Rational> & rhs);
-		std::string Print();
-		std::string PrintRootList();
-		std::string PrintCoords(std::vector<Rational> & coords);
-		std::complex<double> CoordsToComplex(std::vector<Rational> & coords);
-
-	private:
-		int degree, numsquares;
-		std::vector< std::vector<Rational> > squares;
-		std::vector< std::complex<double> > complexroots;
-};
-//////////////////////////////////
-class QuadraticField {
 
 public:
-	QuadraticField();
-	QuadraticField(Rational root);
-	QuadraticField(QuadraticField* basefield_, std::vector<Rational> root_);
-	~QuadraticField();
-
-	int GetDegree(){return degree;}
-	int GetExtensionIndex(){return extensioni;}
-	QuadraticField* GetBaseField() { return basefield;}
-	FieldElement GetRoot();
-	std::string Print();
-
-	static const int numscratch = 3;	
-	std::vector<Rational> Scratch[numscratch];
-	std::vector<Rational> Result;
+    QuadraticFieldTower()
+        : topCoordLength(1) {}
+        
+    void addIfNoSqrRoot(Coordinates x); 
+    bool hasSqrRoot(Coordinates x);
 
 private:
-	int degree, extensioni;
-	std::vector<Rational> Root;
-	QuadraticField* basefield;
-	std::string name;
 
-	std::string PrintRootList();
+    void add(CoordinateRange x, CoordinateRange y, CoordinateRange result);
+    void multiply(int level, CoordinateRange x, CoordinateRange y, CoordinateRange result);
+
+    std::vector<Coordinates> squaresOfRoots;
+    int topCoordLength;
+
 };
