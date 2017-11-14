@@ -13,7 +13,7 @@
 
 class Rational {
 public:
-	Rational(){num = 1; den = 1; name = std::string();};
+	Rational(){num = 1; den = 1;};
 	Rational(int p, int q);
 
 	int GetP() const {return num;};
@@ -39,7 +39,6 @@ private:
 
 	int num, den;
 	int sqrtp, sqrtq;
-	std::string name;
 };
 
 /** 
@@ -50,10 +49,15 @@ private:
 
 struct Coordinates {
 
-    Coordinates(std::vector<Rational> values_)
+    Coordinates(const std::vector<Rational> &values_)
         : values(values_) {}
+    Coordinates(int size)
+        : values(size) {}
+    
+    std::string print();
 
     std::vector<Rational> values;
+
 };
 
 /**
@@ -68,6 +72,9 @@ struct CoordinateRange {
 
     CoordinateRange(std::vector<Rational>::iterator begin_, std::vector<Rational>::iterator end_, int size_)
         : begin(begin_), end(end_), size(size_) {}
+
+    CoordinateRange(Coordinates &x)
+        : begin(x.values.begin()), end(x.values.end()), size(x.values.size()) {}
 
     CoordinateRange firstHalf();
     CoordinateRange secondHalf();
@@ -90,6 +97,8 @@ public:
         
     void addIfNoSqrRoot(Coordinates x); 
     bool hasSqrRoot(Coordinates x);
+    Coordinates multiply(Coordinates &x, Coordinates &y);
+    int getNLevels() {return squaresOfRoots.size();}
 
 private:
 

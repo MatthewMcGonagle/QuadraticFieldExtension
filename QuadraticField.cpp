@@ -18,7 +18,6 @@ Rational::Rational(int p, int q) {
 	num = p;
 	den = q;
 
-	name = std::string();
 }
 
 unsigned int Rational::gcd(int p, int q) const {
@@ -43,6 +42,7 @@ unsigned int Rational::abs(int p) const {
 std::string Rational::print() {
 
 	std::ostringstream convert;
+    std::string name = std::string();
 
 	convert << num;
 	name = convert.str();
@@ -133,6 +133,18 @@ double Rational::ToFloat() {
 }
 
 //////////////////////////////////////////////
+/// Functions for Coordinates
+//////////////////////////////////////////////
+
+std::string Coordinates::print() {
+
+	std::ostringstream convert;
+
+    return std::string("Coordinates::Print Needs Implementation");
+
+}
+
+//////////////////////////////////////////////
 /// Functions for struct CoordinateRange
 //////////////////////////////////////////////
 
@@ -180,6 +192,20 @@ bool QuadraticFieldTower::hasSqrRoot(Coordinates x) {
     return false;
 }
 
+Coordinates QuadraticFieldTower::multiply(Coordinates &x, Coordinates &y) {
+
+    Coordinates result(topCoordLength);
+    CoordinateRange xRange(x), yRange(y), rRange(result);
+
+    if (x.values.size() != topCoordLength || y.values.size() != topCoordLength)
+        return Coordinates(std::vector<Rational>());
+
+    multiply(squaresOfRoots.size() - 1, xRange, yRange, rRange);
+
+    return result;
+
+}
+
 void QuadraticFieldTower::add(CoordinateRange x, CoordinateRange y, CoordinateRange result) {
 
     std::vector<Rational>::iterator xIt, yIt, rIt;
@@ -205,6 +231,10 @@ void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange
                     sc(scratch.begin(), scratch.end(), scratch.size());
     int newLevel = level - 1;
 
+    if (level == 0) {
+        *result.begin = *x.begin * (*y.begin); 
+        return;
+    }
     // Multiply the non-cross terms. Need to multiply in the square of the root for this level.
 
     multiply(newLevel, x2, y2, r1);
