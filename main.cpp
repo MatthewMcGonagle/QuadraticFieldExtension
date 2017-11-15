@@ -65,10 +65,17 @@ int main() {
     std::cout << testOp.print() << std::endl
               << testRational1.print() << " * " << testRational2.print() << " = ";
     testOp = testRational1 * testRational2;
-    std::cout << testOp.print() << std::endl;
+    std::cout << testOp.print() << std::endl << std::endl;
 
-    std::cout << "Test Field Tower" << std::endl;
+    std::cout << "Test of Coordinates printing" << std::endl
+              << "coords1 = " << coords1.print() << std::endl
+              << "coords2 = " << coords2.print() << std::endl << std::endl;
+
+    std::cout << "Test Field Tower" << std::endl
+              << "Adding square root of " << rootToAdd.print() << std::endl; 
     tower.addIfNoSqrRoot(rootToAdd);
+    std::cout << "Testing Multiplication" << std::endl
+              << coords1.print() << "  *  " << coords2.print() << "  =   "; 
     result = tower.multiply(coords1, coords2);
     std::cout << result.print() << std::endl;
 

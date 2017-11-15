@@ -139,7 +139,55 @@ double Rational::ToFloat() {
 std::string Coordinates::print() {
 
 	std::ostringstream convert;
+    std::vector<std::string> names;
+    std::vector<std::string>::iterator nameIt;
+    std::string finalName, rootName;
+    std::vector<Rational>::iterator coordIt;
+    int level = -1, rootIncr;
+    unsigned int logcompute = values.size();
+   
+    // First check trivial cases.
 
+    if(values.size() == 0)
+        return std::string();
+
+    if(values.size() == 1)
+        return values.begin() -> print();
+ 
+    // Compute the log base 2 of size, rounded up to largest integer.
+    while (logcompute > 0) {
+        level++;
+        logcompute = logcompute >> 1;  
+    }
+
+    // Get the print out of the Rational values for each coordinate.
+
+    names.reserve(values.size());
+    for(coordIt = values.begin(); coordIt != values.end(); coordIt++)
+        names.push_back(coordIt -> print());
+
+    // Put in Root Info.
+
+    rootIncr = 2;
+    for(int rootNum = 0; rootNum < level; rootNum++, rootIncr*=2) {
+
+        convert << "r" << rootNum;
+        rootName = convert.str();
+
+        nameIt = names.begin() + rootIncr - 1;
+        for(int j = rootIncr - 1; j < names.size(); nameIt += rootIncr, j += rootIncr) 
+            nameIt -> append(rootName);
+    }
+    // Concatenate all of the names for each coordinate into one single name.
+
+    for(nameIt = names.begin(); nameIt != names.end(); nameIt++) {
+        if (nameIt != names.begin())
+            finalName.append(" + ");
+        finalName.append(*nameIt);
+    }
+
+    return finalName;
+    
     return std::string("Coordinates::Print Needs Implementation");
 
 }
