@@ -74,6 +74,10 @@ int main() {
     std::cout << "Test Field Tower" << std::endl
               << "Adding square root of " << rootToAdd.print() << std::endl; 
     tower.addIfNoSqrRoot(rootToAdd);
+    std::cout << "Testing Addition" << std::endl
+              << coords1.print() << "  +  " << coords2.print() << "  =  ";
+    result = tower.add(coords1, coords2);
+    std::cout << result.print() << std::endl;
     std::cout << "Testing Multiplication" << std::endl
               << coords1.print() << "  *  " << coords2.print() << "  =   "; 
     result = tower.multiply(coords1, coords2);

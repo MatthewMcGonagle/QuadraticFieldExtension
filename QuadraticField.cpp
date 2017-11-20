@@ -240,6 +240,19 @@ bool QuadraticFieldTower::hasSqrRoot(Coordinates x) {
     return false;
 }
 
+Coordinates QuadraticFieldTower::add(Coordinates &x, Coordinates &y) {
+
+    Coordinates result(topCoordLength);
+    CoordinateRange xRange(x), yRange(y), rRange(result);
+
+    if(xRange.size != topCoordLength || yRange.size != topCoordLength)
+        return Coordinates(std::vector<Rational>());
+
+    add(xRange, yRange, rRange);
+    
+    return result;
+}
+
 Coordinates QuadraticFieldTower::multiply(Coordinates &x, Coordinates &y) {
 
     Coordinates result(topCoordLength);
@@ -279,7 +292,7 @@ void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange
                     sc(scratch.begin(), scratch.end(), scratch.size());
     int newLevel = level - 1;
 
-    if (level == 0) {
+    if (level == -1) {
         *result.begin = *x.begin * (*y.begin); 
         return;
     }

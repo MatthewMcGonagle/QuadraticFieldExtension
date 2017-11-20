@@ -98,6 +98,7 @@ public:
     void addIfNoSqrRoot(Coordinates x); 
     bool hasSqrRoot(Coordinates x);
     Coordinates multiply(Coordinates &x, Coordinates &y);
+    Coordinates add(Coordinates &x, Coordinates &y);
     int getNLevels() {return squaresOfRoots.size();}
 
 private:
