@@ -100,6 +100,7 @@ public:
     Coordinates multiply(Coordinates &x, Coordinates &y);
     Coordinates add(Coordinates &x, Coordinates &y);
     int getNLevels() {return squaresOfRoots.size();}
+    std::string print();
 
 private:
 

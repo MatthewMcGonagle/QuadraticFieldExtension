@@ -41,19 +41,16 @@ unsigned int Rational::abs(int p) const {
 
 std::string Rational::print() {
 
-	std::ostringstream convert;
+	std::ostringstream s;
     std::string name = std::string();
 
-	convert << num;
-	name = convert.str();
+	s << num;
 	if(den == 1)
-		return name;
-	name += "/";
-	convert.str(std::string());
-	convert << den;
-	name += convert.str();
+		return s.str();
+	s << "/";
+	s << den;
 
-	return name;
+	return s.str();
 }
 
 const Rational Rational::operator*(const Rational &r) const {
@@ -166,11 +163,16 @@ std::string Coordinates::print() {
     for(coordIt = values.begin(); coordIt != values.end(); coordIt++)
         names.push_back(coordIt -> print());
 
-    // Put in Root Info.
+    // Put in Root Info. Outer iteration is on root, and then inner loop puts it into
+    // correct coordinate position.
 
     rootIncr = 2;
     for(int rootNum = 0; rootNum < level; rootNum++, rootIncr*=2) {
 
+        // Clear the output string stream.
+
+        convert.clear();
+        convert.str("");
         convert << "r" << rootNum;
         rootName = convert.str();
 
@@ -275,6 +277,19 @@ void QuadraticFieldTower::add(CoordinateRange x, CoordinateRange y, CoordinateRa
         xIt++, yIt++, rIt++) {
         *rIt = *xIt + *yIt;
     } 
+}
+
+std::string QuadraticFieldTower::print() {
+
+    std::ostringstream s;
+
+    for(int i = 0; i < squaresOfRoots.size(); i++) {
+        s << "r" << i << " = "
+          << squaresOfRoots[i].print()
+          << std::endl;
+    } 
+
+    return s.str();
 }
 
 void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange y, CoordinateRange result) {
