@@ -63,7 +63,8 @@ int main() {
                 coords3(coords3V);
     QuadraticFieldTower tower;
 
-    std::cout << "Test of Rational operations" << std::endl
+    std::cout << std::endl
+              << "Test of Rational operations" << std::endl
               << testRational1.print() << " + " << testRational2.print() << " = ";
     testOp = testRational1 + testRational2;
     std::cout << testOp.print() << std::endl
@@ -73,9 +74,10 @@ int main() {
 
     std::cout << "Test of Coordinates printing" << std::endl
               << "coords1 = " << coords1.print() << std::endl
-              << "coords2 = " << coords2.print() << std::endl << std::endl;
+              << "coords2 = " << coords2.print() << std::endl; 
 
-    std::cout << "Test Field Tower" << std::endl
+    std::cout << std::endl 
+              << "Test Field Tower" << std::endl
               << "Adding square root of " << rootToAdd.print() << std::endl; 
     tower.addIfNoSqrRoot(rootToAdd);
     std::cout << "Field Tower Squares of Roots are:" << std::endl
@@ -89,7 +91,19 @@ int main() {
     result = tower.multiply(coords1, coords2);
     std::cout << result.print() << std::endl;
 
-    std::cout << "Adding Square Root of " << rootToAdd2.print() << std::endl;
+    std::cout << "Now do a Numerical Test" << std::endl
+              << "Complex Conversion of " << coords1.print() << " = "
+              << tower.convertToComplex(coords1) << std::endl;
+    std::cout << "Complex Conversion of " << coords2.print() << " = "
+              << tower.convertToComplex(coords2) << std::endl;
+    std::cout << "Complex Conversion of Product " << result.print()
+              << " = " << tower.convertToComplex(result) << std::endl;
+    std::cout << "Pure Complex Multiplication is = " 
+              << tower.convertToComplex(coords1) * tower.convertToComplex(coords2) << std::endl;
+
+
+    std::cout << std::endl
+              << "Adding Square Root of " << rootToAdd2.print() << std::endl;
     tower.addIfNoSqrRoot(rootToAdd2);
     std::cout << "Field Tower Squares of Roots are:" << std::endl
               << tower.print();
@@ -97,9 +111,17 @@ int main() {
               << coords3.print() << " * " << coords3.print() << " = ";
     result = tower.multiply(coords3, coords3);
     std::cout << result.print() << std::endl; 
-   
+  
+    std::cout << "Do Numerical Tests" << std::endl
+              << "Complex Conversion of " << coords3.print() << " = "
+              << tower.convertToComplex(coords3) << std::endl; 
+    std::cout << "Complex Conversion of Product Result = "
+              << tower.convertToComplex(result) << std::endl;
+    std::cout << "Pure Complex Multiplication = " 
+              << tower.convertToComplex(coords3) * tower.convertToComplex(coords3) << std::endl;
 
-    std::cout << "Finished" << std::endl;
+    std::cout << std::endl
+              << "Finished" << std::endl;
 
 	return 0;
 

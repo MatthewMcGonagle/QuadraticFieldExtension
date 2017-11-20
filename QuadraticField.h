@@ -30,7 +30,7 @@ public:
 	int GetSqrtP(){return sqrtp;}
 	int GetSqrtQ(){return sqrtq;}
 	Rational GetSqrt(){return Rational(sqrtp, sqrtq);}
-	double ToFloat();
+	double toFloat();
 
 private:
 
@@ -101,6 +101,7 @@ public:
     Coordinates add(Coordinates &x, Coordinates &y);
     int getNLevels() {return squaresOfRoots.size();}
     std::string print();
+    std::complex<float> convertToComplex(Coordinates &x);
 
 private:
 
@@ -108,6 +109,7 @@ private:
     void multiply(int level, CoordinateRange x, CoordinateRange y, CoordinateRange result);
 
     std::vector<Coordinates> squaresOfRoots;
+    std::vector<std::complex<float> > complexRoots;
     int topCoordLength;
 
 };

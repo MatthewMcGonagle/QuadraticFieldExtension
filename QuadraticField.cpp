@@ -123,7 +123,7 @@ bool Rational::FindSqrt() {
 		return false;
 }
 
-double Rational::ToFloat() {
+double Rational::toFloat() {
 	double result = num;
         result /= den;
 	return result;	
@@ -226,13 +226,18 @@ CoordinateRange CoordinateRange::secondHalf() {
 
 void QuadraticFieldTower::addIfNoSqrRoot(Coordinates x) {
 
+    std::complex<float> newConversion;
+
     if (x.values.size() != topCoordLength)
         return;
 
     if (hasSqrRoot(x)) {
         return;
     }
-   
+  
+    newConversion = convertToComplex(x); 
+    newConversion = std::sqrt(newConversion);
+    complexRoots.push_back(newConversion);
     squaresOfRoots.push_back(x); 
     topCoordLength *= 2;
 }
@@ -326,3 +331,47 @@ void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange
     add(r2, sc, r2);
       
 }
+
+std::complex<float> QuadraticFieldTower::convertToComplex(Coordinates &x) {
+
+    std::complex<float> half1, half2;
+    std::vector<std::complex<float> > complexCoord;
+    std::complex<float> result(0.0, 0.0);
+
+    // If the coordinates are too large, then we can't compute the conversion.
+
+    if (x.values.size() > topCoordLength) 
+        return std::complex<float>(0.0, 0.0);
+
+    // If x is just rational, then we can just directly compute the floating point
+    // conversion.
+
+    if(x.values.size() == 1) 
+        return std::complex<float>(x.values[0].toFloat(), 0.0);
+   
+
+    // For more coordinates, we figure out the complex values of each coordinate and then add together.
+
+    // First get complex representation of just Rational part of each coordinate.
+
+    for (int i = 0; i < x.values.size(); i++) 
+        complexCoord.push_back(std::complex<float>(x.values[i].toFloat(), 0.0));
+
+
+    // Now loop over each root square and multiply it into the appropriate coordinate.        
+
+    for(int rootN = 0, coordInc = 2; rootN < complexRoots.size(); rootN++, coordInc *= 2) {
+
+        for(int i = coordInc - 1; i < complexCoord.size(); i += coordInc) 
+            complexCoord[i] *= complexRoots[rootN]; 
+    }  
+
+    // Now add all of the coordinate conversions together.
+
+    for(int i  = 0; i < complexCoord.size(); i++)
+        result += complexCoord[i];
+
+    return result;
+}
+
+
