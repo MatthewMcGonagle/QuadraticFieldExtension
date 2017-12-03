@@ -130,7 +130,22 @@ public:
 
 private:
 
+    /** 
+        member function gcd
+        Gets the greatest common divisor of two integers. Useful for reducing by common factors to keep
+        integers from overflowing.
+        @param p First integer.
+        @param q Second integer.
+        @return The greatest common divisor.
+    */
 	unsigned int gcd(int p, int q) const;
+
+    /**
+        member function abs
+        Returns the absolute values of an integer.
+        @param p The integer.
+        @return The absolute value of p.
+    */ 
 	unsigned int abs(int p) const;
 
 	int num, den;
@@ -145,11 +160,25 @@ private:
 
 struct Coordinates {
 
+    /**
+        initializer Coordinates
+        Initializes the values based on a pre-assigned vector<Rational> giving the coordinate values.   
+    */
     Coordinates(const std::vector<Rational> &values_)
         : values(values_) {}
+
+    /** 
+        initializer Coordinates
+        Initializes the values based on their total length. Uses the defualt values for the Rational class.
+    */
     Coordinates(int size)
         : values(size) {}
-    
+
+    /**
+        member function print
+        Gives the string reperentation of the coordinates. This is meant to be human readable.
+        @return The string representation. 
+    */
     std::string print();
 
     std::vector<Rational> values;
