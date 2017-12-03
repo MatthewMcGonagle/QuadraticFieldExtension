@@ -108,7 +108,7 @@ int main() {
     std::cout << "Field Tower Squares of Roots are:" << std::endl
               << tower.print();
     std::cout << "Testing Multiplication" << std::endl
-              << coords3.print() << " * " << coords3.print() << " = ";
+              << "(" << coords3.print() << ") * (" << coords3.print() << ") = ";
     result = tower.multiply(coords3, coords3);
     std::cout << result.print() << std::endl; 
   

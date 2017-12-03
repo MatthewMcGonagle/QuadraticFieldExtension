@@ -166,7 +166,7 @@ std::string Coordinates::print() {
     // Put in Root Info. Outer iteration is on root, and then inner loop puts it into
     // correct coordinate position.
 
-    rootIncr = 2;
+    rootIncr = 1;
     for(int rootNum = 0; rootNum < level; rootNum++, rootIncr*=2) {
 
         // Clear the output string stream.
@@ -176,9 +176,10 @@ std::string Coordinates::print() {
         convert << "r" << rootNum;
         rootName = convert.str();
 
-        nameIt = names.begin() + rootIncr - 1;
-        for(int j = rootIncr - 1; j < names.size(); nameIt += rootIncr, j += rootIncr) 
-            nameIt -> append(rootName);
+        nameIt = names.begin() + rootIncr;
+        for(int j = rootIncr; j < names.size(); nameIt += rootIncr, j += rootIncr) 
+            for(int k = 0; k < rootIncr; k++, nameIt++, j++)
+                nameIt -> append(rootName);
     }
     // Concatenate all of the names for each coordinate into one single name.
 
@@ -360,10 +361,11 @@ std::complex<float> QuadraticFieldTower::convertToComplex(Coordinates &x) {
 
     // Now loop over each root square and multiply it into the appropriate coordinate.        
 
-    for(int rootN = 0, coordInc = 2; rootN < complexRoots.size(); rootN++, coordInc *= 2) {
+    for(int rootN = 0, coordInc = 1; rootN < complexRoots.size(); rootN++, coordInc *= 2) {
 
-        for(int i = coordInc - 1; i < complexCoord.size(); i += coordInc) 
-            complexCoord[i] *= complexRoots[rootN]; 
+        for(int i = coordInc; i < complexCoord.size(); i += 2 * coordInc) 
+            for(int k = i; k < i + coordInc && k < complexCoord.size(); k++)
+                complexCoord[k] *= complexRoots[rootN]; 
     }  
 
     // Now add all of the coordinate conversions together.
