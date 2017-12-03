@@ -237,21 +237,79 @@ struct CoordinateRange {
 
 /**
     class QuadraticFieldTower
-
+    This class is responsible for holding the chain of squares of roots that define the entire field. It
+    also handles the operations on coordinates of elements in the field, such as multiplication and finding
+    square roots.
 */
 
 class QuadraticFieldTower {
 
 public:
+    /**
+        initializer QuadraticFieldTower
+        No roots have been added yet. So it starts as only working with rational numbers, that is Coordinates
+        of length 1.
+    */
     QuadraticFieldTower()
         : topCoordLength(1) {}
         
+    /**
+        member function addIfNoSqrRoot
+        Tests if number has square root in current state of field. If not, then this number is added
+        to the list of square roots, and we expand the field to handle coordinates that are now twice as
+        large as before.
+        @param x The coordiantes of the number to check.
+    */
     void addIfNoSqrRoot(Coordinates x); 
+
+    /**
+        member function hasSqrRoot
+        Checks if number represented by coordinates has a square root in the current field set up.
+        @param x The coordinates of the number to try to take the square root of.
+        @return True if the square root can be described using the current coordinate system. 
+    */
     bool hasSqrRoot(Coordinates x);
+
+    /**
+        member function multiply
+        Multiplies two numbers together. Uses their coordinates.
+        @param x Coordinates of first number.
+        @param y Coordinates of second number.
+        @return The coordinates of the result of the multiplication.
+    */
     Coordinates multiply(Coordinates &x, Coordinates &y);
+
+    /**
+        member function add
+        Adds two numbers together using their coordinate representation.
+        @param x Coordinates of the first number.
+        @param y Coordinates of the second number.
+        @return The coordinates of the result of the addition.
+    */
     Coordinates add(Coordinates &x, Coordinates &y);
+
+    /**
+        member function getNLevels
+        The returns the number of square roots that are used in the current coordinate system. Note,
+        the size of the coordinate system should be 2**getNLevels.
+        @return The number of square roots.
+    */ 
     int getNLevels() {return squaresOfRoots.size();}
+
+    /**
+        member function print
+        Prints out the square roots that are used in the current coordinate system. This completely 
+        describes the Quadratic Field.
+        @return String containing the printing.
+    */
     std::string print();
+
+    /** 
+        member function convertToComplex
+        Finds the complex approximation of a number based on the coordinates representing it. This is
+        based on the complex approximation of all of the square roots.
+        @return The complex approximation. 
+    */
     std::complex<float> convertToComplex(Coordinates &x);
 
 private:
