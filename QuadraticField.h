@@ -195,13 +195,39 @@ struct Coordinates {
 
 struct CoordinateRange {
 
+    /** 
+        initializer CoordinateRange
+        Constructs the coordinates range using iterators for the beginning of the range and the end of the range.
+        We also include the size so we don't need to waste time calculating it from the iterators.
+        @param begin_ An iterator pointing to the beginning of this coordinate range.
+        @param end_ An iterator pointing to the end of this coordinate range.
+        @param size The size of the coordinate range. It should match the number of elements from begin_ to end_.
+            The caller is responsible for making sure this is true.
+    */
     CoordinateRange(std::vector<Rational>::iterator begin_, std::vector<Rational>::iterator end_, int size_)
         : begin(begin_), end(end_), size(size_) {}
 
+    /**
+        initializer CoordinateRange
+        Constructs the coordinates range from a reference to a complete set of coordinates. So the coordinate
+        range points to the entirety of the coordinates.
+        @param x Reference to coordinates range to point to.
+    */
     CoordinateRange(Coordinates &x)
         : begin(x.values.begin()), end(x.values.end()), size(x.values.size()) {}
 
+    /**
+        member function firstHalf
+        Constructs a new coordinate range pointing to the first half of this coordinate range.
+        @return The coordinate range for the first half of this coordinate range.
+    */
     CoordinateRange firstHalf();
+
+    /**
+        member function secondHalf
+        Constructs a new coordinate range pointing to the second half of this coordinate range.
+        @return The coordinate range for the second half of this coorindate range.
+    */
     CoordinateRange secondHalf();
 
     std::vector<Rational>::iterator begin, end;
