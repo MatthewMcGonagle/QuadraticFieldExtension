@@ -88,14 +88,14 @@ const Rational Rational::operator-(const Rational &r) const {
 	return Rational(pnew, lcm);
 }
 
-Rational Rational::Inverse() {
+Rational Rational::inverse() {
 	if(num == 0)
 		return Rational(num, den);
 	else
 		return Rational(den, num);
 }
 
-bool Rational::IsZero() {
+bool Rational::isZero() {
 	if(num== 0)
 		return true;
 	else
@@ -219,6 +219,40 @@ CoordinateRange CoordinateRange::secondHalf() {
     newBegin = begin + newSize;
     
     return CoordinateRange(newBegin, end, newSize);
+}
+
+bool CoordinateRange::isZero() {
+
+    std::vector<Rational>::iterator numIt;
+    for(numIt = begin; numIt != end; numIt++) 
+        if (! numIt -> isZero())
+            return false;
+
+    return true;
+}
+
+void CoordinateRange::scale(Rational scalar) {
+
+
+    std::vector<Rational>::iterator numIt;
+    for(numIt = begin; numIt != end; numIt++) 
+        *numIt = (*numIt) * scalar;
+
+}
+
+void CoordinateRange::set(Rational x) {
+
+
+    std::vector<Rational>::iterator numIt;
+    for(numIt = begin; numIt != end; numIt++)
+        *numIt = x;
+}
+
+void CoordinateRange::copyVals(CoordinateRange x) {
+
+    std::vector<Rational>::iterator myIt, xIt;
+    for (myIt = begin, xIt = x.begin; myIt != end, xIt != x.end; myIt++, xIt++)
+        *myIt = *xIt; 
 }
 
 //////////////////////////////////////////////
@@ -376,4 +410,146 @@ std::complex<float> QuadraticFieldTower::convertToComplex(Coordinates &x) {
     return result;
 }
 
+void QuadraticFieldTower::inverse(int level, CoordinateRange x, CoordinateRange sol) {
+
+    Coordinates scratch1(x.size / 2), scratch2(x.size / 2);
+    CoordinateRange scratchR1(scratch1), scratchR2(scratch2),
+    // Form of x = a + r b.
+                    a = x.firstHalf(), b = x.secondHalf(), 
+                    solR1 = sol.firstHalf(), solR2 = sol.secondHalf(),
+                    rSquare = CoordinateRange(squaresOfRoots[level]);
+
+    if(level < 0) {
+        *(sol.begin) = x.begin -> inverse(); 
+        return;
+    }
+
+    // Store inverse of a**2 - r**2 * b**2 into scratch. Note, that at the end,
+    // second half of scratch should be all 0.
+
+    multiply(level - 1, rSquare, b, scratchR1); 
+    multiply(level - 1, scratchR1, b, scratchR2);
+    scratchR2.scale(Rational(-1, 1));
+    multiply(level - 1, a, a, scratchR1);
+    add(scratchR1, scratchR2, scratchR2);
+    inverse(level - 1, scratchR2, scratchR1);
+   
+    // Now multiply scratch against a - r * b 
+    multiply(level - 1, scratchR1, a, solR1); 
+    multiply(level - 1, scratchR1, b, solR2); 
+    solR2.scale(Rational(-1,1));
+}
+
+bool QuadraticFieldTower::hasSqrt(Rational &x, Rational &sol) {
+
+    int num = x.GetP(), den = x.GetQ(), sqrtp = 0, sqrtq = 0;
+
+	if (num > 0 && den > 0){
+
+		do
+			sqrtp++;
+
+		while ( sqrtp*sqrtp < num );
+
+		do
+			sqrtq++;
+
+		while ( sqrtq*sqrtq < den );
+
+		if( sqrtp*sqrtp == num && sqrtq*sqrtq ==den ) {
+            sol = Rational(sqrtp, sqrtq);
+			return true;
+        }
+		else
+			return false;
+	}
+	else
+		return false;
+}
+
+bool QuadraticFieldTower::hasSqrt(CoordinateRange x, int level, CoordinateRange sol) {
+
+    // Use x = a + r * b
+    Coordinates scratch1(x.size/2), scratch2(x.size/2), scratch3(x.size / 2);
+    CoordinateRange a = x.firstHalf(), b = x.secondHalf(),
+                    scratch1R(scratch1), scratch2R(scratch2), scratch3R(scratch3),
+                    solR1 = sol.firstHalf(), solR2 = sol.secondHalf(),
+                    r = CoordinateRange(squaresOfRoots[level]);
+    bool result;
+  
+    if (level < 0) {
+
+       result = hasSqrt(*x.begin, *sol.begin); 
+       return result;
+
+    } 
+
+    if (b.isZero()) {
+        result = hasSqrt(a, level - 1, sol.firstHalf());
+        return result;
+    }     
+
+    else {
+
+        // Need to test sqrt of a**2 - r**2 * b**2
+
+        multiply(level - 1, b, b, scratch1R); 
+        multiply(level - 1, scratch1R, r, scratch2R);
+        scratch2R.scale(Rational(-1, 1));
+        multiply(level - 1, a, a, scratch1R);
+        add(scratch1R, scratch2R, scratch3R);
+        
+        // Now test square root.
+
+        result = hasSqrt(scratch3R, level - 1, scratch1R);
+
+        if (!result)
+            return result;
+
+        // Now test c = sqrt[(a + sqrt(a**2 - r**2 * b**2)) / 2 ].
+
+        add(scratch1R, a, scratch2R);
+        scratch2R.scale(Rational(1,2)); 
+        result = hasSqrt(scratch2R, level - 1, scratch3R);
+    
+        // When square root found, get other half of square root and store in solution.
+        if (result) {
+
+            // Set c is scratch3R.
+            solR1.copyVals(scratch3R);
+
+            // Second half root, d, is b / (2c). 
+            scratch3R.scale(Rational(2,1));
+            inverse(level - 1, scratch3R, scratch2R);
+            multiply(level - 1, b, scratch2R, solR2);
+             
+            return result;
+        }
+
+        // Now test c = sqrt[(a - sqrt(a**2 - r**2 * b**2)) / 2 ].
+
+        scratch1R.scale(Rational(-1, 1));
+        add(scratch1R, a, scratch2R);
+        scratch2R.scale(Rational(1,2));
+        result = hasSqrt(scratch2R, level - 1, scratch3R);
+
+        // When square root found, get the other half of the square root and stor in solution.
+        if (result) {
+
+            // Set c is scratch3R.
+            solR1.copyVals(scratch3R);
+
+            // Second half root, d, is b / (2c). 
+            scratch3R.scale(Rational(2,1));
+            inverse(level - 1, scratch3R, scratch2R);
+            multiply(level - 1, b, scratch2R, solR2);
+
+        }
+        
+    }
+
+
+    // Didn't return when checking square roots in last steps, so it must not exist.
+    return false;
+} 
 

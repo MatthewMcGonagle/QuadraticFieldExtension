@@ -16,9 +16,9 @@ public:
 
     /**
         member function Rational
-        Defaults to giving representation of the number 1.
+        Defaults to giving representation of the number 0.
     */
-	Rational(){num = 1; den = 1;};
+	Rational(){num = 0; den = 1;};
 
     /**
         member function Ratoinal
@@ -82,14 +82,14 @@ public:
         Gets the inverse of the fraction.
         @return Returns the fraction representing q/p when this fraction is p/q.
     */
-	Rational Inverse();
+	Rational inverse();
 
     /**
         member function IsZero
         Tests if fraction is 0.
         @return True if the fraction is 0.
     */
-	bool IsZero();
+	bool isZero();
     
     /**
         member function FindSqrt
@@ -230,6 +230,35 @@ struct CoordinateRange {
     */
     CoordinateRange secondHalf();
 
+    /**
+        member function isZero
+        Tests if all Rational numbers in coordinate range are zero.
+        @return True if all zero
+    */
+    bool isZero();
+
+    /**
+        member function scale
+        Scales each number by scalar. Does so in place.
+        @param scalar The value to scale by.
+    */
+    void scale(Rational scalar);
+
+    /**
+        member function set
+        Sets each number to prescribed Rational number. Does so in place.
+        @param x The Rational to set each number to.
+    */
+    void set(Rational x);
+
+    /**
+        member function copyVals
+        Copy the values from the coordinates referenced by another CoordinateRange instance. If lengths
+        don't match, then it only copies for smaller of two sizes.
+        @param x The CoordinateRange to copy from.
+    */
+    void copyVals(CoordinateRange x);
+
     std::vector<Rational>::iterator begin, end;
     int size;
 
@@ -316,6 +345,9 @@ private:
 
     void add(CoordinateRange x, CoordinateRange y, CoordinateRange result);
     void multiply(int level, CoordinateRange x, CoordinateRange y, CoordinateRange result);
+    void inverse(int level, CoordinateRange x, CoordinateRange sol);
+    bool hasSqrt(Rational &x, Rational &sol);
+    bool hasSqrt(CoordinateRange x, int level, CoordinateRange sol);
 
     std::vector<Coordinates> squaresOfRoots;
     std::vector<std::complex<float> > complexRoots;
