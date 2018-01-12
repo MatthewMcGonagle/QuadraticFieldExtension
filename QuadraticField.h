@@ -152,7 +152,8 @@ private:
 	int sqrtp, sqrtq;
 };
 
-/** function printCoords
+/** 
+    function printCoords
     
     Prints coordinates in nice human readable format.
     @param x Reference to coordinate vector.
@@ -161,6 +162,38 @@ private:
 
 std::string printCoords(std::vector<Rational> &x);
 
+/** 
+    function minDegree
+    
+    Gets the minimum level of Quadratic Field Tower necessary to give meaning to the coordinates.
+    @param x Reference to coordinate vector.
+    @return The minimum level.
+**/
+
+    unsigned int minDegree(std::vector<Rational> &x);
+
+/**
+    function padCoordsToLevel
+    
+    Pads a coordinate vector with zeroes to make it match a given Quadratic Field 
+    Tower level n (i.e. length = 2**n).
+
+    @param x Reference to coordinate vector.
+    @param level The level to pad the vector to.
+**/
+
+    void padCoordsToLevel(std::vector<Rational> &x);
+
+/**
+    function padCoordsToSize
+
+    Pads a coordinate vector with zeroes to make it a certain size.
+    
+    @param x Reference to coordinate vector.
+    @param size The size to pad the vector to.
+**/
+
+    void padCoordsToSize(std::vector<Rational> &x, int size);
 /**
     struct CoordinateRange
 
@@ -190,15 +223,6 @@ struct CoordinateRange {
     **/
     CoordinateRange(std::vector<Rational> &x)
         : begin(x.begin()), end(x.end()), size(x.size()) {}
-
-//    /**
-//        initializer CoordinateRange
-//        Constructs the coordinates range from a reference to a complete set of coordinates. So the coordinate
-//        range points to the entirety of the coordinates.
-//        @param x Reference to coordinates range to point to.
-//    */
-//    CoordinateRange(Coordinates &x)
-//        : begin(x.values.begin()), end(x.values.end()), size(x.values.size()) {}
 
     /**
         member function firstHalf

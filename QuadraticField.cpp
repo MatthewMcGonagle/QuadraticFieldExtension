@@ -195,6 +195,46 @@ std::string printCoords(std::vector<Rational> &x) {
 
 }
 
+unsigned int minDegree(std::vector<Rational> &x) {
+
+    unsigned int max = 1, level = 0; 
+
+    if (x.size() == 0)
+        return 1; 
+
+    while(max < x.size()) {
+        max <<= 1;
+        level++;
+    }
+
+    return level;
+}
+
+void padCoordsToLevel(std::vector<Rational> &x, unsigned int level) {
+
+    unsigned int minLevel = minDegree(x);
+    int missing;
+
+    if (minLevel > level)
+        return;
+   
+    // Remember that 1 << minLevel == 2**minLevel, a power of 2.
+    missing = (1 << minLevel) - x.size();
+
+    if(missing < 1)
+        return;
+
+    x.insert(x.end(), missing, Rational(0,1));
+}
+
+void padCoordsToSize(std::vector<Rational> &x, int size) {
+
+    int missingSize = size - x.size();
+
+    if(missingSize > 0) 
+        x.insert(x.end(), missingSize, Rational(0,1));
+}
+
 //////////////////////////////////////////////
 /// Functions for struct CoordinateRange
 //////////////////////////////////////////////
@@ -262,9 +302,12 @@ void CoordinateRange::copyVals(CoordinateRange x) {
 void QuadraticFieldTower::addIfNoSqrRoot(std::vector<Rational> x) {
 
     std::complex<float> newConversion;
+    unsigned int minLevel = minDegree(x);
 
-    if (x.size() != topCoordLength)
-        return;
+    // First handle size comparisons.
+
+    if (x.size() < topCoordLength)
+        padCoordsToSize(x, topCoordLength);
 
     if (hasSqrRoot(x)) {
         return;
