@@ -152,38 +152,14 @@ private:
 	int sqrtp, sqrtq;
 };
 
-/** 
-    struct Coordinates
+/** function printCoords
     
-    Simple wrapper for the type of coordinates, which is std::vector<Rational>.
-*/
+    Prints coordinates in nice human readable format.
+    @param x Reference to coordinate vector.
+    @return A string holding the human readable format.
+**/
 
-struct Coordinates {
-
-    /**
-        initializer Coordinates
-        Initializes the values based on a pre-assigned vector<Rational> giving the coordinate values.   
-    */
-    Coordinates(const std::vector<Rational> &values_)
-        : values(values_) {}
-
-    /** 
-        initializer Coordinates
-        Initializes the values based on their total length. Uses the defualt values for the Rational class.
-    */
-    Coordinates(int size)
-        : values(size) {}
-
-    /**
-        member function print
-        Gives the string reperentation of the coordinates. This is meant to be human readable.
-        @return The string representation. 
-    */
-    std::string print();
-
-    std::vector<Rational> values;
-
-};
+std::string printCoords(std::vector<Rational> &x);
 
 /**
     struct CoordinateRange
@@ -209,12 +185,20 @@ struct CoordinateRange {
 
     /**
         initializer CoordinateRange
-        Constructs the coordinates range from a reference to a complete set of coordinates. So the coordinate
-        range points to the entirety of the coordinates.
-        @param x Reference to coordinates range to point to.
-    */
-    CoordinateRange(Coordinates &x)
-        : begin(x.values.begin()), end(x.values.end()), size(x.values.size()) {}
+        Constructs the coordinates range from a reference to an entire std::vector<Rational>.
+        @param x Reference to the coordinates vector.
+    **/
+    CoordinateRange(std::vector<Rational> &x)
+        : begin(x.begin()), end(x.end()), size(x.size()) {}
+
+//    /**
+//        initializer CoordinateRange
+//        Constructs the coordinates range from a reference to a complete set of coordinates. So the coordinate
+//        range points to the entirety of the coordinates.
+//        @param x Reference to coordinates range to point to.
+//    */
+//    CoordinateRange(Coordinates &x)
+//        : begin(x.values.begin()), end(x.values.end()), size(x.values.size()) {}
 
     /**
         member function firstHalf
@@ -276,7 +260,7 @@ class QuadraticFieldTower {
 public:
     /**
         initializer QuadraticFieldTower
-        No roots have been added yet. So it starts as only working with rational numbers, that is Coordinates
+        No roots have been added yet. So it starts as only working with rational numbers, that is coordinates
         of length 1.
     */
     QuadraticFieldTower()
@@ -289,7 +273,7 @@ public:
         large as before.
         @param x The coordiantes of the number to check.
     */
-    void addIfNoSqrRoot(Coordinates x); 
+    void addIfNoSqrRoot(std::vector<Rational> x); 
 
     /**
         member function hasSqrRoot
@@ -297,7 +281,7 @@ public:
         @param x The coordinates of the number to try to take the square root of.
         @return True if the square root can be described using the current coordinate system. 
     */
-    bool hasSqrRoot(Coordinates x);
+    bool hasSqrRoot(std::vector<Rational> x);
 
     /**
         member function multiply
@@ -306,7 +290,7 @@ public:
         @param y Coordinates of second number.
         @return The coordinates of the result of the multiplication.
     */
-    Coordinates multiply(Coordinates &x, Coordinates &y);
+    std::vector<Rational> multiply(std::vector<Rational> &x, std::vector<Rational> &y);
 
     /**
         member function add
@@ -315,7 +299,7 @@ public:
         @param y Coordinates of the second number.
         @return The coordinates of the result of the addition.
     */
-    Coordinates add(Coordinates &x, Coordinates &y);
+    std::vector<Rational> add(std::vector<Rational> &x, std::vector<Rational> &y);
 
     /**
         member function getNLevels
@@ -339,7 +323,7 @@ public:
         based on the complex approximation of all of the square roots.
         @return The complex approximation. 
     */
-    std::complex<float> convertToComplex(Coordinates &x);
+    std::complex<float> convertToComplex(std::vector<Rational> &x);
 
 private:
 
@@ -349,7 +333,7 @@ private:
     bool hasSqrt(Rational &x, Rational &sol);
     bool hasSqrt(CoordinateRange x, int level, CoordinateRange sol);
 
-    std::vector<Coordinates> squaresOfRoots;
+    std::vector<std::vector<Rational> > squaresOfRoots;
     std::vector<std::complex<float> > complexRoots;
     int topCoordLength;
 

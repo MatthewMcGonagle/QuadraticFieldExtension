@@ -133,23 +133,23 @@ double Rational::toFloat() {
 /// Functions for Coordinates
 //////////////////////////////////////////////
 
-std::string Coordinates::print() {
+std::string printCoords(std::vector<Rational> &x) {
 
-	std::ostringstream convert;
+ 	std::ostringstream convert;
     std::vector<std::string> names;
     std::vector<std::string>::iterator nameIt;
     std::string finalName, rootName;
     std::vector<Rational>::iterator coordIt;
     int level = -1, rootIncr;
-    unsigned int logcompute = values.size();
+    unsigned int logcompute = x.size();
    
     // First check trivial cases.
 
-    if(values.size() == 0)
+    if(x.size() == 0)
         return std::string();
 
-    if(values.size() == 1)
-        return values.begin() -> print();
+    if(x.size() == 1)
+        return x.begin() -> print();
  
     // Compute the log base 2 of size, rounded up to largest integer.
     while (logcompute > 0) {
@@ -159,8 +159,8 @@ std::string Coordinates::print() {
 
     // Get the print out of the Rational values for each coordinate.
 
-    names.reserve(values.size());
-    for(coordIt = values.begin(); coordIt != values.end(); coordIt++)
+    names.reserve(x.size());
+    for(coordIt = x.begin(); coordIt != x.end(); coordIt++)
         names.push_back(coordIt -> print());
 
     // Put in Root Info. Outer iteration is on root, and then inner loop puts it into
@@ -259,11 +259,11 @@ void CoordinateRange::copyVals(CoordinateRange x) {
 /// Functions for class QuadraticFieldTower
 //////////////////////////////////////////////
 
-void QuadraticFieldTower::addIfNoSqrRoot(Coordinates x) {
+void QuadraticFieldTower::addIfNoSqrRoot(std::vector<Rational> x) {
 
     std::complex<float> newConversion;
 
-    if (x.values.size() != topCoordLength)
+    if (x.size() != topCoordLength)
         return;
 
     if (hasSqrRoot(x)) {
@@ -277,31 +277,31 @@ void QuadraticFieldTower::addIfNoSqrRoot(Coordinates x) {
     topCoordLength *= 2;
 }
 
-bool QuadraticFieldTower::hasSqrRoot(Coordinates x) {
+bool QuadraticFieldTower::hasSqrRoot(std::vector<Rational> x) {
 
     return false;
 }
 
-Coordinates QuadraticFieldTower::add(Coordinates &x, Coordinates &y) {
+std::vector<Rational> QuadraticFieldTower::add(std::vector<Rational> &x, std::vector<Rational> &y) {
 
-    Coordinates result(topCoordLength);
+    std::vector<Rational> result(topCoordLength);
     CoordinateRange xRange(x), yRange(y), rRange(result);
 
     if(xRange.size != topCoordLength || yRange.size != topCoordLength)
-        return Coordinates(std::vector<Rational>());
+        return std::vector<Rational>();
 
     add(xRange, yRange, rRange);
     
     return result;
 }
 
-Coordinates QuadraticFieldTower::multiply(Coordinates &x, Coordinates &y) {
+std::vector<Rational> QuadraticFieldTower::multiply(std::vector<Rational> &x, std::vector<Rational> &y) {
 
-    Coordinates result(topCoordLength);
+    std::vector<Rational> result(topCoordLength);
     CoordinateRange xRange(x), yRange(y), rRange(result);
 
-    if (x.values.size() != topCoordLength || y.values.size() != topCoordLength)
-        return Coordinates(std::vector<Rational>());
+    if (x.size() != topCoordLength || y.size() != topCoordLength)
+        return std::vector<Rational>();
 
     multiply(squaresOfRoots.size() - 1, xRange, yRange, rRange);
 
@@ -325,7 +325,7 @@ std::string QuadraticFieldTower::print() {
 
     for(int i = 0; i < squaresOfRoots.size(); i++) {
         s << "r" << i << " = "
-          << squaresOfRoots[i].print()
+          << printCoords(squaresOfRoots[i])
           << std::endl;
     } 
 
@@ -341,9 +341,9 @@ void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange
                     y2 = y.secondHalf(),
                     r1 = result.firstHalf(),
                     r2 = result.secondHalf(),
-                    square = CoordinateRange(squaresOfRoots[level].values.begin(),
-                                             squaresOfRoots[level].values.end(),
-                                             squaresOfRoots[level].values.size()),
+                    square = CoordinateRange(squaresOfRoots[level].begin(),
+                                             squaresOfRoots[level].end(),
+                                             squaresOfRoots[level].size()),
                     sc(scratch.begin(), scratch.end(), scratch.size());
     int newLevel = level - 1;
 
@@ -367,7 +367,7 @@ void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange
       
 }
 
-std::complex<float> QuadraticFieldTower::convertToComplex(Coordinates &x) {
+std::complex<float> QuadraticFieldTower::convertToComplex(std::vector<Rational> &x) {
 
     std::complex<float> half1, half2;
     std::vector<std::complex<float> > complexCoord;
@@ -375,22 +375,22 @@ std::complex<float> QuadraticFieldTower::convertToComplex(Coordinates &x) {
 
     // If the coordinates are too large, then we can't compute the conversion.
 
-    if (x.values.size() > topCoordLength) 
+    if (x.size() > topCoordLength) 
         return std::complex<float>(0.0, 0.0);
 
     // If x is just rational, then we can just directly compute the floating point
     // conversion.
 
-    if(x.values.size() == 1) 
-        return std::complex<float>(x.values[0].toFloat(), 0.0);
+    if(x.size() == 1) 
+        return std::complex<float>(x[0].toFloat(), 0.0);
    
 
     // For more coordinates, we figure out the complex values of each coordinate and then add together.
 
     // First get complex representation of just Rational part of each coordinate.
 
-    for (int i = 0; i < x.values.size(); i++) 
-        complexCoord.push_back(std::complex<float>(x.values[i].toFloat(), 0.0));
+    for (int i = 0; i < x.size(); i++) 
+        complexCoord.push_back(std::complex<float>(x[i].toFloat(), 0.0));
 
 
     // Now loop over each root square and multiply it into the appropriate coordinate.        
@@ -412,7 +412,7 @@ std::complex<float> QuadraticFieldTower::convertToComplex(Coordinates &x) {
 
 void QuadraticFieldTower::inverse(int level, CoordinateRange x, CoordinateRange sol) {
 
-    Coordinates scratch1(x.size / 2), scratch2(x.size / 2);
+    std::vector<Rational> scratch1(x.size / 2), scratch2(x.size / 2);
     CoordinateRange scratchR1(scratch1), scratchR2(scratch2),
     // Form of x = a + r b.
                     a = x.firstHalf(), b = x.secondHalf(), 
@@ -470,7 +470,7 @@ bool QuadraticFieldTower::hasSqrt(Rational &x, Rational &sol) {
 bool QuadraticFieldTower::hasSqrt(CoordinateRange x, int level, CoordinateRange sol) {
 
     // Use x = a + r * b
-    Coordinates scratch1(x.size/2), scratch2(x.size/2), scratch3(x.size / 2);
+    std::vector<Rational> scratch1(x.size/2), scratch2(x.size/2), scratch3(x.size / 2);
     CoordinateRange a = x.firstHalf(), b = x.secondHalf(),
                     scratch1R(scratch1), scratch2R(scratch2), scratch3R(scratch3),
                     solR1 = sol.firstHalf(), solR2 = sol.secondHalf(),
