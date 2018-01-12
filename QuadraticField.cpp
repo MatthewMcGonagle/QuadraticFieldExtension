@@ -308,11 +308,17 @@ void QuadraticFieldTower::addIfNoSqrRoot(std::vector<Rational> x) {
 
     if (x.size() < topCoordLength)
         padCoordsToSize(x, topCoordLength);
+    else if (x.size() > topCoordLength)
+        return;
+
+    // Now check if there is a square root.
 
     if (hasSqrRoot(x)) {
         return;
     }
-  
+
+    // x is the right size and has no square root. Therefore, we may add it.  
+
     newConversion = convertToComplex(x); 
     newConversion = std::sqrt(newConversion);
     complexRoots.push_back(newConversion);
@@ -327,14 +333,28 @@ bool QuadraticFieldTower::hasSqrRoot(std::vector<Rational> x) {
 
 std::vector<Rational> QuadraticFieldTower::add(std::vector<Rational> &x, std::vector<Rational> &y) {
 
-    std::vector<Rational> result(topCoordLength);
-    CoordinateRange xRange(x), yRange(y), rRange(result);
-
-    if(xRange.size != topCoordLength || yRange.size != topCoordLength)
-        return std::vector<Rational>();
-
-    add(xRange, yRange, rRange);
+    std::vector<Rational> result;
+    std::vector<Rational>::iterator addBegin, addEnd,
+                                    resultIt, addIt;
     
+    if (x.size() > y.size()) {
+        result = x;
+        addBegin = y.begin();
+        addEnd = y.end();
+    }
+    else {
+        result = y;
+        addBegin = x.begin();
+        addEnd = x.end();
+    }
+
+    for ( resultIt = result.begin(), addIt = addBegin; 
+          resultIt != result.end() && addIt != addEnd;
+          resultIt++, addIt++ ) {
+
+        *resultIt = *resultIt + *addIt;
+    } 
+   
     return result;
 }
 

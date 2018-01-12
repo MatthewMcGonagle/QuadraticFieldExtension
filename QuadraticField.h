@@ -351,6 +351,17 @@ public:
 
 private:
 
+    /**
+        function add
+
+        Adds values in two coordinate ranges x and y, and stores result in values in third coordinate range
+        result. It is fine to do something like add(x, y, x). Note, guaranteed to work properly only when
+        x, y, and result have the same size (as ranges).
+
+        @param x First coordinate range to add.
+        @param y Second coordinate range to add.
+        @param result Where to store result of adding ranges.
+    **/
     void add(CoordinateRange x, CoordinateRange y, CoordinateRange result);
     void multiply(int level, CoordinateRange x, CoordinateRange y, CoordinateRange result);
     void inverse(int level, CoordinateRange x, CoordinateRange sol);
