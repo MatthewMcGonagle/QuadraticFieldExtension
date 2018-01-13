@@ -363,8 +363,21 @@ std::vector<Rational> QuadraticFieldTower::multiply(std::vector<Rational> &x, st
     std::vector<Rational> result(topCoordLength);
     CoordinateRange xRange(x), yRange(y), rRange(result);
 
-    if (x.size() != topCoordLength || y.size() != topCoordLength)
-        return std::vector<Rational>();
+    // Check lengths of coordinates to multiply.
+
+    if (x.size() > topCoordLength || y.size() > topCoordLength)
+        throw std::invalid_argument("Coordinate size is too large.");
+
+    if (x.size() < topCoordLength) {
+        padCoordsToSize(x, topCoordLength);
+        xRange = CoordinateRange(x);
+    }
+
+    if (y.size() < topCoordLength) {
+        padCoordsToSize(y, topCoordLength);
+    }
+
+    // Now multiply. 
 
     multiply(squaresOfRoots.size() - 1, xRange, yRange, rRange);
 
