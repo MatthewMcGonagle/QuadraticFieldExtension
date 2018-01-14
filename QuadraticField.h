@@ -350,10 +350,23 @@ public:
     */
     std::complex<float> convertToComplex(std::vector<Rational> &x);
 
+    /**
+        memberfunction hasSqrt
+        Finds if the number represented by the coordinates x has a square root in the current number
+        system that can be handled by the instance of QuadraticFieldTower. If the square root exists,
+        then it is stored in solution.
+
+        @param x Reference to the coordinates representing the number to put under the square root. 
+        @param sol Reference to coordinates to hold the square root if it exists.
+        @return True if the square root exists in the current number system used by this
+            instance of QuadraticFieldTower. 
+    **/
+    bool hasSqrt(std::vector<Rational> &x, std::vector<Rational> &sol);
+
 private:
 
     /**
-        function add
+        memberfunction add
 
         Adds values in two coordinate ranges x and y, and stores result in values in third coordinate range
         result. It is fine to do something like add(x, y, x). Note, guaranteed to work properly only when

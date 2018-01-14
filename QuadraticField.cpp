@@ -427,6 +427,7 @@ void QuadraticFieldTower::multiply(int level, CoordinateRange x, CoordinateRange
         *result.begin = *x.begin * (*y.begin); 
         return;
     }
+
     // Multiply the non-cross terms. Need to multiply in the square of the root for this level.
 
     multiply(newLevel, x2, y2, r1);
@@ -484,6 +485,32 @@ std::complex<float> QuadraticFieldTower::convertToComplex(std::vector<Rational> 
         result += complexCoord[i];
 
     return result;
+}
+
+bool QuadraticFieldTower::hasSqrt(std::vector<Rational> &x, std::vector<Rational> &sol) {
+
+    CoordinateRange xRange(x), solRange(sol);
+
+    // First deal with sizes of x and solution.
+
+    if (x.size() > topCoordLength)
+        return false;
+    else if (x.size() < topCoordLength) {
+        padCoordsToSize(x, topCoordLength);
+        xRange = CoordinateRange(x);
+    }
+
+    if (sol.size() > topCoordLength)
+        solRange = CoordinateRange(sol.begin(), sol.begin() + topCoordLength, topCoordLength);
+
+    else if(sol.size() < topCoordLength) {
+        padCoordsToSize(sol, topCoordLength);
+        solRange = CoordinateRange(sol); 
+    }
+
+    // Now use internal function to check for square root using the coordinate ranges.
+
+    return hasSqrt(xRange, squaresOfRoots.size(), solRange);
 }
 
 void QuadraticFieldTower::inverse(int level, CoordinateRange x, CoordinateRange sol) {
@@ -609,7 +636,7 @@ bool QuadraticFieldTower::hasSqrt(CoordinateRange x, int level, CoordinateRange 
         scratch2R.scale(Rational(1,2));
         result = hasSqrt(scratch2R, level - 1, scratch3R);
 
-        // When square root found, get the other half of the square root and stor in solution.
+        // When square root found, get the other half of the square root and store in solution.
         if (result) {
 
             // Set c is scratch3R.
@@ -620,10 +647,10 @@ bool QuadraticFieldTower::hasSqrt(CoordinateRange x, int level, CoordinateRange 
             inverse(level - 1, scratch3R, scratch2R);
             multiply(level - 1, b, scratch2R, solR2);
 
+            return result;
         }
         
     }
-
 
     // Didn't return when checking square roots in last steps, so it must not exist.
     return false;
