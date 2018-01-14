@@ -510,7 +510,7 @@ bool QuadraticFieldTower::hasSqrt(std::vector<Rational> &x, std::vector<Rational
 
     // Now use internal function to check for square root using the coordinate ranges.
 
-    return hasSqrt(xRange, squaresOfRoots.size(), solRange);
+    return hasSqrt(xRange, squaresOfRoots.size() - 1, solRange);
 }
 
 void QuadraticFieldTower::inverse(int level, CoordinateRange x, CoordinateRange sol) {

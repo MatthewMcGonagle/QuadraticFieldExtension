@@ -14,10 +14,10 @@ int main() {
     std::vector<Rational> coords1(coordInit1, coordInit1 + sizeof(coordInit1) / sizeof(Rational)),
                           coords2(coordInit2, coordInit2 + sizeof(coordInit2) / sizeof(Rational)),
                           coords3(coordInit3, coordInit3 + sizeof(coordInit3) / sizeof(Rational)),
-                          result_init(2),
                           rootToAdd(1, Rational(2,1)),
                           rootToAdd2(2, Rational(1,1)),
-                          result(2);
+                          result(2), result2(2);
+    bool sqrtExists;
     QuadraticFieldTower tower;
 
     std::cout << std::endl
@@ -32,6 +32,8 @@ int main() {
     std::cout << "Test of Coordinates printing" << std::endl
               << "coords1 = " << printCoords(coords1) << std::endl
               << "coords2 = " << printCoords(coords2) << std::endl; 
+
+    // Test QuadraticFieldTower after adding square root 2.
 
     std::cout << std::endl 
               << "Test Field Tower" << std::endl
@@ -56,8 +58,17 @@ int main() {
     std::cout << "Complex Conversion of Product " << printCoords(result)
               << " = " << tower.convertToComplex(result) << std::endl;
     std::cout << "Pure Complex Multiplication is = " 
-              << tower.convertToComplex(coords1) * tower.convertToComplex(coords2) << std::endl;
+              << tower.convertToComplex(coords1) * tower.convertToComplex(coords2) << std::endl << std::endl;
 
+    std::cout << "Testing Square Root" << std::endl
+              << "Look at square root of square of " << printCoords(coords1) << std::endl;
+    result = tower.multiply(coords1, coords1);
+    std::cout << "Square = " << printCoords(result) << std::endl;
+    sqrtExists = tower.hasSqrt(result, result2);
+    std::cout << "sqrtExists = " << sqrtExists << std::endl
+              << "Square root = " << printCoords(result2) << std::endl;
+
+    // Now add another square root to QuadraticFieldTower.
 
     std::cout << std::endl
               << "Adding Square Root of " << printCoords(rootToAdd2) << std::endl;
