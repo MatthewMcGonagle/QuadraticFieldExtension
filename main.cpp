@@ -86,8 +86,14 @@ int main() {
     std::cout << "Complex Conversion of Product Result = "
               << tower.convertToComplex(result) << std::endl;
     std::cout << "Pure Complex Multiplication = " 
-              << tower.convertToComplex(coords3) * tower.convertToComplex(coords3) << std::endl;
+              << tower.convertToComplex(coords3) * tower.convertToComplex(coords3) << std::endl << std::endl;
 
+    std::cout << "Now let's test the square root of the square of " << printCoords(coords3) << std::endl;
+    result = tower.multiply(coords3, coords3);
+    std::cout << "Square of " << printCoords(coords3) << " = " << printCoords(result) << std::endl;
+    sqrtExists = tower.hasSqrt(result, result2);
+    std::cout << "sqrtExists = " << sqrtExists << std::endl
+              << "square root = " << printCoords(result2) << std::endl;    
     std::cout << std::endl
               << "Finished" << std::endl;
 
