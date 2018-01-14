@@ -235,3 +235,10 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Unnecessary Jekyll Files
+docs/Gemfile
+docs/Gemfile.lock
+docs/_site/
+
+*.swo
