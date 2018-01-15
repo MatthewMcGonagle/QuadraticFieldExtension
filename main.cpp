@@ -94,6 +94,9 @@ int main() {
     sqrtExists = tower.hasSqrt(result, result2);
     std::cout << "sqrtExists = " << sqrtExists << std::endl
               << "square root = " << printCoords(result2) << std::endl;    
+
+    std::cout << "Now let's test printing of root list in QuadraticFieldTower." << std::endl
+              << tower.print() << std::endl;
     std::cout << std::endl
               << "Finished" << std::endl;
 

@@ -396,9 +396,9 @@ std::string QuadraticFieldTower::print() {
     std::ostringstream s;
 
     for(int i = 0; i < squaresOfRoots.size(); i++) {
-        s << "r" << i << " = "
+        s << "r" << i << " = sqrt( "
           << printCoords(squaresOfRoots[i])
-          << std::endl;
+          << " )" << std::endl;
     } 
 
     return s.str();
