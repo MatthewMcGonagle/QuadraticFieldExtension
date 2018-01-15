@@ -10,7 +10,7 @@ int main() {
     Rational testRational1(1,2), testRational2(2,3), testOp;
     Rational coordInit1[] = {Rational(2, 1), Rational(3, 1)},
              coordInit2[] = {Rational(1, 1), Rational(1, 1)},
-             coordInit3[] = {Rational(1, 1), Rational(1, 1), Rational(1,1), Rational(1,1)};
+             coordInit3[] = {Rational(1, 1), Rational(2, 1), Rational(3,1), Rational(4,1)};
     std::vector<Rational> coords1(coordInit1, coordInit1 + sizeof(coordInit1) / sizeof(Rational)),
                           coords2(coordInit2, coordInit2 + sizeof(coordInit2) / sizeof(Rational)),
                           coords3(coordInit3, coordInit3 + sizeof(coordInit3) / sizeof(Rational)),
