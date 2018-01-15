@@ -303,6 +303,7 @@ void QuadraticFieldTower::addIfNoSqrRoot(std::vector<Rational> x) {
 
     std::complex<float> newConversion;
     unsigned int minLevel = minDegree(x);
+    std::vector<Rational> sqrt(topCoordLength);
 
     // First handle size comparisons.
 
@@ -313,7 +314,7 @@ void QuadraticFieldTower::addIfNoSqrRoot(std::vector<Rational> x) {
 
     // Now check if there is a square root.
 
-    if (hasSqrRoot(x)) {
+    if (hasSqrt(x, sqrt)) {
         return;
     }
 
@@ -577,7 +578,7 @@ bool QuadraticFieldTower::hasSqrt(CoordinateRange x, int level, CoordinateRange 
     CoordinateRange a = x.firstHalf(), b = x.secondHalf(),
                     scratch1R(scratch1), scratch2R(scratch2), scratch3R(scratch3),
                     solR1 = sol.firstHalf(), solR2 = sol.secondHalf(),
-                    r = CoordinateRange(squaresOfRoots[level]);
+                    r; 
     bool result;
   
     if (level < 0) {
@@ -586,6 +587,8 @@ bool QuadraticFieldTower::hasSqrt(CoordinateRange x, int level, CoordinateRange 
        return result;
 
     } 
+
+    r = CoordinateRange(squaresOfRoots[level]);
 
     if (b.isZero()) {
         result = hasSqrt(a, level - 1, sol.firstHalf());

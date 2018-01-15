@@ -205,6 +205,7 @@ std::string printCoords(std::vector<Rational> &x);
 
 struct CoordinateRange {
 
+    CoordinateRange() : size(0) {}
     /** 
         initializer CoordinateRange
         Constructs the coordinates range using iterators for the beginning of the range and the end of the range.
