@@ -327,11 +327,6 @@ void QuadraticFieldTower::addIfNoSqrRoot(std::vector<Rational> x) {
     topCoordLength *= 2;
 }
 
-bool QuadraticFieldTower::hasSqrRoot(std::vector<Rational> x) {
-
-    return false;
-}
-
 std::vector<Rational> QuadraticFieldTower::add(std::vector<Rational> &x, std::vector<Rational> &y) {
 
     std::vector<Rational> result;

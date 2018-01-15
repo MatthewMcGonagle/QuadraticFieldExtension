@@ -302,14 +302,6 @@ public:
     void addIfNoSqrRoot(std::vector<Rational> x); 
 
     /**
-        member function hasSqrRoot
-        Checks if number represented by coordinates has a square root in the current field set up.
-        @param x The coordinates of the number to try to take the square root of.
-        @return True if the square root can be described using the current coordinate system. 
-    */
-    bool hasSqrRoot(std::vector<Rational> x);
-
-    /**
         member function multiply
         Multiplies two numbers together. Uses their coordinates.
         @param x Coordinates of first number.
