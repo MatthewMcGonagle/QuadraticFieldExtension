@@ -13,6 +13,28 @@ We mean numbers such as:
 * `1 + sqrt(2)`, 
 * `1 + 2/3 * sqrt(2) + 7/5 * sqrt(1/2 + 4/5 * sqrt(2))`.
 
+# Building the Project
+
+The project has `CMakeLists.txt` files to allow the use of `cmake` to build the project (this includes doing
+an out of source build).
+
+For example, suppose we are using windows and wish to build the project using `MinGW`; futhermore
+the directory structure is the following
+
+```text
+ourProject
+   | buildDirectory 
+   | QuadraticFieldExtension 
+```
+From a terminal and the `buildDirectory`, we will need to run the following two commands: 
+
+```
+cmake ..\QuadraticFieldExtension -G "MinGW Makefiles"
+mingw32-make 
+```
+ 
+# Description of Classes
+
 Let us next review how to use the classes in <code>QuadraticField.cpp</code> allow us to do 
 arithmetic with such numbers.
 
